@@ -1,0 +1,31 @@
+# 대용량 데이터 파일 (GitHub 100MB 제한 초과)
+src/phase1_data/raw/
+src/phase1_data/price_panel.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# 가상환경
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로그 (선택적 보존)
+# src/phase1_data/download_log.txt
+# src/phase1_data/preprocessing_log.txt

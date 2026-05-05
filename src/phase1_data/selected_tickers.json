@@ -1,0 +1,458 @@
+{
+  "generated_at": "2026-05-06T04:22:56.748108",
+  "n_assets": 50,
+  "period": "2025-02-01 00:00:00 ~ 2026-03-31 23:59:00 (KST)",
+  "selection_basis": "avg_acc_trade_price (KRW)",
+  "assets": [
+    {
+      "rank": 1,
+      "ticker": "XRP",
+      "market": "KRW-XRP",
+      "korean_name": "엑스알피(리플)",
+      "english_name": "XRP",
+      "avg_trade_value": 374144125.56,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 2,
+      "ticker": "BTC",
+      "market": "KRW-BTC",
+      "korean_name": "비트코인",
+      "english_name": "Bitcoin",
+      "avg_trade_value": 192909732.73,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 3,
+      "ticker": "ETH",
+      "market": "KRW-ETH",
+      "korean_name": "이더리움",
+      "english_name": "Ethereum",
+      "avg_trade_value": 170647522.12,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 4,
+      "ticker": "SOL",
+      "market": "KRW-SOL",
+      "korean_name": "솔라나",
+      "english_name": "Solana",
+      "avg_trade_value": 85538646.02,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 5,
+      "ticker": "DOGE",
+      "market": "KRW-DOGE",
+      "korean_name": "도지코인",
+      "english_name": "Dogecoin",
+      "avg_trade_value": 78088225.37,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 6,
+      "ticker": "AERGO",
+      "market": "KRW-AERGO",
+      "korean_name": "아르고",
+      "english_name": "Aergo",
+      "avg_trade_value": 41172744.96,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 7,
+      "ticker": "ADA",
+      "market": "KRW-ADA",
+      "korean_name": "에이다",
+      "english_name": "Ada",
+      "avg_trade_value": 35381467.53,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 8,
+      "ticker": "AUCTION",
+      "market": "KRW-AUCTION",
+      "korean_name": "바운스토큰",
+      "english_name": "Bounce",
+      "avg_trade_value": 30038810.47,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 9,
+      "ticker": "ONDO",
+      "market": "KRW-ONDO",
+      "korean_name": "온도파이낸스",
+      "english_name": "Ondo Finance",
+      "avg_trade_value": 28097795.14,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 10,
+      "ticker": "SUI",
+      "market": "KRW-SUI",
+      "korean_name": "수이",
+      "english_name": "Sui",
+      "avg_trade_value": 27482951.48,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 11,
+      "ticker": "VIRTUAL",
+      "market": "KRW-VIRTUAL",
+      "korean_name": "버추얼프로토콜",
+      "english_name": "Virtuals Protocol",
+      "avg_trade_value": 24855557.68,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 12,
+      "ticker": "ARDR",
+      "market": "KRW-ARDR",
+      "korean_name": "아더",
+      "english_name": "Ardor",
+      "avg_trade_value": 21001626.64,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 13,
+      "ticker": "MOVE",
+      "market": "KRW-MOVE",
+      "korean_name": "무브먼트",
+      "english_name": "Movement",
+      "avg_trade_value": 20054303.6,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 14,
+      "ticker": "AWE",
+      "market": "KRW-AWE",
+      "korean_name": "에이더블유이",
+      "english_name": "AWE Network",
+      "avg_trade_value": 19300276.16,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 15,
+      "ticker": "XLM",
+      "market": "KRW-XLM",
+      "korean_name": "스텔라루멘",
+      "english_name": "Lumen",
+      "avg_trade_value": 18709808.94,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 16,
+      "ticker": "AXS",
+      "market": "KRW-AXS",
+      "korean_name": "엑시인피니티",
+      "english_name": "Axie Infinity",
+      "avg_trade_value": 17312527.68,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 17,
+      "ticker": "SNT",
+      "market": "KRW-SNT",
+      "korean_name": "스테이터스네트워크토큰",
+      "english_name": "Status Network Token",
+      "avg_trade_value": 16340602.22,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 18,
+      "ticker": "QTUM",
+      "market": "KRW-QTUM",
+      "korean_name": "퀀텀",
+      "english_name": "Qtum",
+      "avg_trade_value": 16282454.6,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 19,
+      "ticker": "ANIME",
+      "market": "KRW-ANIME",
+      "korean_name": "애니메코인",
+      "english_name": "Animecoin",
+      "avg_trade_value": 16261484.79,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 20,
+      "ticker": "PUNDIX",
+      "market": "KRW-PUNDIX",
+      "korean_name": "펀디엑스",
+      "english_name": "Pundi X",
+      "avg_trade_value": 15488822.22,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 21,
+      "ticker": "ARK",
+      "market": "KRW-ARK",
+      "korean_name": "아크",
+      "english_name": "Ark",
+      "avg_trade_value": 15074687.74,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 22,
+      "ticker": "ENS",
+      "market": "KRW-ENS",
+      "korean_name": "이더리움네임서비스",
+      "english_name": "Ethereum Name Service",
+      "avg_trade_value": 14774259.33,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 23,
+      "ticker": "LINK",
+      "market": "KRW-LINK",
+      "korean_name": "체인링크",
+      "english_name": "Chainlink",
+      "avg_trade_value": 14682349.5,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 24,
+      "ticker": "CRO",
+      "market": "KRW-CRO",
+      "korean_name": "크로노스",
+      "english_name": "Cronos",
+      "avg_trade_value": 14638033.63,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 25,
+      "ticker": "HBAR",
+      "market": "KRW-HBAR",
+      "korean_name": "헤데라",
+      "english_name": "Hedera",
+      "avg_trade_value": 14281774.43,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 26,
+      "ticker": "VANA",
+      "market": "KRW-VANA",
+      "korean_name": "바나",
+      "english_name": "Vana",
+      "avg_trade_value": 14008287.91,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 27,
+      "ticker": "SEI",
+      "market": "KRW-SEI",
+      "korean_name": "세이",
+      "english_name": "Sei",
+      "avg_trade_value": 13996288.15,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 28,
+      "ticker": "STRAX",
+      "market": "KRW-STRAX",
+      "korean_name": "저트라",
+      "english_name": "Xertra",
+      "avg_trade_value": 13705837.2,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 29,
+      "ticker": "KNC",
+      "market": "KRW-KNC",
+      "korean_name": "카이버네트워크",
+      "english_name": "Kyber Network",
+      "avg_trade_value": 13694709.02,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 30,
+      "ticker": "ME",
+      "market": "KRW-ME",
+      "korean_name": "매직에덴",
+      "english_name": "Magic Eden",
+      "avg_trade_value": 13692838.56,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 31,
+      "ticker": "SHIB",
+      "market": "KRW-SHIB",
+      "korean_name": "시바이누",
+      "english_name": "Shiba Inu",
+      "avg_trade_value": 13295994.95,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 32,
+      "ticker": "CBK",
+      "market": "KRW-CBK",
+      "korean_name": "코박토큰",
+      "english_name": "Cobak Token",
+      "avg_trade_value": 13288457.31,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 33,
+      "ticker": "AQT",
+      "market": "KRW-AQT",
+      "korean_name": "알파쿼크",
+      "english_name": "Alpha Quark Token",
+      "avg_trade_value": 13155401.15,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 34,
+      "ticker": "SAFE",
+      "market": "KRW-SAFE",
+      "korean_name": "세이프",
+      "english_name": "Safe",
+      "avg_trade_value": 13027621.94,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 35,
+      "ticker": "GLM",
+      "market": "KRW-GLM",
+      "korean_name": "골렘",
+      "english_name": "Golem",
+      "avg_trade_value": 12307908.14,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 36,
+      "ticker": "PEPE",
+      "market": "KRW-PEPE",
+      "korean_name": "페페",
+      "english_name": "Pepe",
+      "avg_trade_value": 12289284.2,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 37,
+      "ticker": "BONK",
+      "market": "KRW-BONK",
+      "korean_name": "봉크",
+      "english_name": "Bonk",
+      "avg_trade_value": 11949886.7,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 38,
+      "ticker": "WAVES",
+      "market": "KRW-WAVES",
+      "korean_name": "웨이브",
+      "english_name": "Waves",
+      "avg_trade_value": 11690485.4,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 39,
+      "ticker": "MASK",
+      "market": "KRW-MASK",
+      "korean_name": "마스크네트워크",
+      "english_name": "Mask Network",
+      "avg_trade_value": 11106460.59,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 40,
+      "ticker": "ATH",
+      "market": "KRW-ATH",
+      "korean_name": "에이셔",
+      "english_name": "Aethir",
+      "avg_trade_value": 10704517.16,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 41,
+      "ticker": "TOKAMAK",
+      "market": "KRW-TOKAMAK",
+      "korean_name": "토카막네트워크",
+      "english_name": "Tokamak Network",
+      "avg_trade_value": 10670975.67,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 42,
+      "ticker": "CARV",
+      "market": "KRW-CARV",
+      "korean_name": "카브",
+      "english_name": "CARV",
+      "avg_trade_value": 10636493.29,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 43,
+      "ticker": "MEW",
+      "market": "KRW-MEW",
+      "korean_name": "캣인어독스월드",
+      "english_name": "cat in a dogs world",
+      "avg_trade_value": 10578851.67,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 44,
+      "ticker": "MNT",
+      "market": "KRW-MNT",
+      "korean_name": "맨틀",
+      "english_name": "Mantle",
+      "avg_trade_value": 10441034.21,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 45,
+      "ticker": "PYTH",
+      "market": "KRW-PYTH",
+      "korean_name": "피스네트워크",
+      "english_name": "Pyth Network",
+      "avg_trade_value": 10421957.36,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 46,
+      "ticker": "SONIC",
+      "market": "KRW-SONIC",
+      "korean_name": "소닉SVM",
+      "english_name": "Sonic SVM",
+      "avg_trade_value": 10411732.68,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 47,
+      "ticker": "GAS",
+      "market": "KRW-GAS",
+      "korean_name": "가스",
+      "english_name": "GAS",
+      "avg_trade_value": 10188078.89,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 48,
+      "ticker": "AKT",
+      "market": "KRW-AKT",
+      "korean_name": "아카시네트워크",
+      "english_name": "Akash Network",
+      "avg_trade_value": 10044153.6,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 49,
+      "ticker": "BIGTIME",
+      "market": "KRW-BIGTIME",
+      "korean_name": "빅타임",
+      "english_name": "Big Time",
+      "avg_trade_value": 10015919.4,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    },
+    {
+      "rank": 50,
+      "ticker": "DRIFT",
+      "market": "KRW-DRIFT",
+      "korean_name": "드리프트",
+      "english_name": "Drift",
+      "avg_trade_value": 9947024.52,
+      "selection_reason": "평균 거래대금 상위 50 (연속 volume=0 없음)"
+    }
+  ]
+}
