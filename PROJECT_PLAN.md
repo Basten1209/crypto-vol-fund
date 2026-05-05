@@ -25,7 +25,9 @@ Walk-forward 백테스팅 (1주 / 2주 cycle)
 ## 1. 데이터 수집 (Phase 1)
 
 ### 거래소 / 빈도
-- **Upbit KRW 마켓**, 1분봉 OHLCV
+- **Upbit 원화(KRW) 마켓 상품만** 대상
+- **1분봉(1m)** 사용
+- 다운로드 소스: <https://www.upbit.com/historical_data/download?prefix=candle> 의 자산별 1m monthly CSV
 
 ### 기간
 - 다운로드: 2025-02 ~ 2026-03 monthly CSV
@@ -45,7 +47,9 @@ Walk-forward 백테스팅 (1주 / 2주 cycle)
 - 모든 일별 통계(PRVM, daily return)는 이 cut을 따른다.
 
 ### 산출물
-- log-price DataFrame (총 분 수 × 50)
+- **최종 가격 패널**: index = 1분 timestamp (KST), columns = 50개 종목명, value = price (close 단일값)
+  - 즉, 시간 × 종목 2축의 wide-format DataFrame, price만 보유 (OHLCV 중 close 또는 합의된 단일 가격 컬럼)
+  - log 변환은 후속 phase에서 수행
 - 종목 메타데이터 (선정 사유, 거래대금 통계)
 - 결측/이상치 처리 로그
 
@@ -53,20 +57,20 @@ Walk-forward 백테스팅 (1주 / 2주 cycle)
 
 ## 2. EDA (Phase 2)
 
-### 기본 분포 분석
-- 1분 log-return의 kurtosis 분포 → heavy-tail 존재 검증
+### 자산별 기초 통계
+- **자산별 일평균 거래횟수**: 50종목 평균 / 분포 (유동성 sanity check)
+- **단일 자산 요약 표**: 종목별 log-return mean, std (일/연환산), min/max, 기간 수익률
+- **단일 자산 변동성 시계열**: 종목별 rolling 변동성 추이
+
+### 분포 / 의존성 분석
+- **log price return kurtosis plot**: 자산별 1분 / 일별 log-return kurtosis (heavy-tail 시각화)
 - Volatility clustering: squared-return ACF
 - Cross-asset correlation의 시간 변화 (월별)
 - 거래량 / 유동성 분포 (종목 선정 정당화)
 
-### Crypto-specific 검증 (PRVM 파라미터 적절성)
-1. **PRVM signature plot**: sampling frequency를 1, 2, 5, 10, 15, 30분으로 바꿔가며 일평균 RV(대각합) 추이 확인 → K = 37의 적절성 검증
-2. **Noise:signal ratio 추정**: Aït-Sahalia, Mykland & Zhang (2005) noise variance estimator로 종목별 추정
-3. **Jump activity 검증**: jump component 시계열, 빈도/크기 분포
-
 ### 산출물
 - EDA 노트북 / HTML 리포트
-- K, c_0 등 PRVM 파라미터의 crypto-specific 적절성 판정
+- 자산별 통계 요약 테이블 (CSV)
 
 ---
 
@@ -100,10 +104,16 @@ $$\widehat{\Gamma}_d = \frac{1}{\psi K} \sum_{k=0}^{m-K} \overline{Y}_{d,k} \ove
 ### 주의사항
 - 참조 코드 `cal_prvm_final.py`의 hardcoded `371`은 m=390용. **m=1440 적용 시 `num_k = m − K + 1 = 1404`로 수정**.
 
+### Crypto-specific 파라미터 검증
+1. **PRVM signature plot**: sampling frequency를 1, 2, 5, 10, 15, 30분으로 바꿔가며 일평균 RV(대각합) 추이 확인 → K = 37의 적절성 검증
+2. **Noise:signal ratio 추정**: Aït-Sahalia, Mykland & Zhang (2005) noise variance estimator로 종목별 추정
+3. **Jump activity 검증**: jump component 시계열, 빈도/크기 분포 → c_0 = 4 적절성 판정
+
 ### 산출물
 - 일별 PRVM dictionary `{date: np.ndarray(50, 50)}`
 - 일별 JV dictionary `{date: np.ndarray(50, 50)}`
 - Long-format CSV: `(date, ticker_i, ticker_j, value)`
+- K, c_0 등 PRVM 파라미터의 crypto-specific 적절성 판정 리포트
 
 ---
 
@@ -222,8 +232,8 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 | 평가 frequency | 10분 |
 
 ### Phase 별 검증 후 결정
-- Phase 2 EDA 결과: K = 37 적절성 → 필요시 grid search
-- Phase 2 EDA 결과: c_0 = 4 (jump) 적절성 → 필요시 5~6 상향
+- Phase 3 검증 결과: K = 37 적절성 → 필요시 grid search
+- Phase 3 검증 결과: c_0 = 4 (jump) 적절성 → 필요시 5~6 상향
 - Phase 6 결과: 단일종목 cap 도입 여부 (max weight 분포 보고)
 - Phase 6 결과: subsample 분리 평가 여부 (구조적 break 발견 시)
 
