@@ -17,6 +17,9 @@ build/
 venv/
 env/
 
+# Claude Code 로컬 설정 (개인 권한 정보 포함)
+.claude/
+
 # IDE
 .vscode/
 .idea/
