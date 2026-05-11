@@ -1,0 +1,116 @@
+{
+  "summary": {
+    "row_count": 610560,
+    "start": "2025-02-01 00:00:00",
+    "end": "2026-03-31 23:59:00",
+    "n_trading_days": 425,
+    "full_1440_days": 423,
+    "partial_days": [
+      [
+        "2025-01-31",
+        540
+      ],
+      [
+        "2026-03-31",
+        900
+      ]
+    ],
+    "nan_count": 0,
+    "inf_count": 0,
+    "nonpositive_count": 0,
+    "gap_violations": 0,
+    "duplicate_count": 0
+  },
+  "checks": [
+    {
+      "name": "Header column count",
+      "ok": true,
+      "detail": "got 52 (expected 52: timestamp + 50 tickers + trading_day)"
+    },
+    {
+      "name": "'timestamp' column present",
+      "ok": true,
+      "detail": "first column = 'timestamp'"
+    },
+    {
+      "name": "'trading_day' column present",
+      "ok": true,
+      "detail": "trading_day in columns"
+    },
+    {
+      "name": "Ticker count",
+      "ok": true,
+      "detail": "got 50 tickers (expected 50)"
+    },
+    {
+      "name": "No stablecoin tickers",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "CSV tickers == selected_tickers.json",
+      "ok": true,
+      "detail": "match"
+    },
+    {
+      "name": "Row count",
+      "ok": true,
+      "detail": "got 610,560 (expected 610,560)"
+    },
+    {
+      "name": "Start timestamp",
+      "ok": true,
+      "detail": "first = 2025-02-01 00:00:00"
+    },
+    {
+      "name": "End timestamp",
+      "ok": true,
+      "detail": "last  = 2026-03-31 23:59:00"
+    },
+    {
+      "name": "1-min uniform spacing",
+      "ok": true,
+      "detail": "non-1min diffs: 0"
+    },
+    {
+      "name": "No duplicate timestamps",
+      "ok": true,
+      "detail": "duplicates: 0"
+    },
+    {
+      "name": "No NaN in tickers",
+      "ok": true,
+      "detail": "NaN count: 0"
+    },
+    {
+      "name": "No Inf in tickers",
+      "ok": true,
+      "detail": "Inf count: 0"
+    },
+    {
+      "name": "All prices > 0",
+      "ok": true,
+      "detail": "<=0 count: 0"
+    },
+    {
+      "name": "All ticker columns float64",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "trading_day cut == (timestamp - 9h).normalize()",
+      "ok": true,
+      "detail": "OK"
+    },
+    {
+      "name": "Most days have 1440 rows",
+      "ok": true,
+      "detail": "n_days=425, full=423, partial=[('2025-01-31', 540), ('2026-03-31', 900)]"
+    },
+    {
+      "name": "Log-returns finite (first 2 days sample)",
+      "ok": true,
+      "detail": "non-finite log-return count: 0"
+    }
+  ]
+}
