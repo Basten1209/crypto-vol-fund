@@ -17,7 +17,11 @@ def project_psd(matrix: np.ndarray, floor: float = 1e-10) -> np.ndarray:
     M_sym = (matrix + matrix.T) / 2
     eigvals, eigvecs = np.linalg.eigh(M_sym)
     eigvals_clipped = np.clip(eigvals, floor, None)
-    return eigvecs @ np.diag(eigvals_clipped) @ eigvecs.T
+    with np.errstate(divide="ignore", over="ignore", under="ignore", invalid="ignore"):
+        projected = (eigvecs * eigvals_clipped) @ eigvecs.T
+    if not np.isfinite(projected).all():
+        raise FloatingPointError("PSD projection produced non-finite values")
+    return (projected + projected.T) / 2
 
 
 def ensure_dir(path: Path) -> Path:
