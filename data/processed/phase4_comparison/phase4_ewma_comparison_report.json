@@ -1,0 +1,54 @@
+{
+  "input_path": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase3/prvm_results.npz",
+  "output_dir": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison",
+  "target_matrix_key": "prvm",
+  "params": {
+    "lambda": 0.94,
+    "init_days": 28,
+    "analysis_start": "2025-03-01",
+    "psd_floor": 1e-10,
+    "method": "recursive_seeded_riskmetrics_ewma"
+  },
+  "summary": [
+    {
+      "model": "jump_adjusted_prvm_ewma",
+      "input_matrix_key": "prvm",
+      "ground_truth_matrix_key": "prvm",
+      "n_forecast_days": 395,
+      "first_target_date": "2025-03-01",
+      "last_target_date": "2026-03-30",
+      "mean_mspe": 0.00432389835110182,
+      "mean_mspe_x1e4": 43.2389835110182,
+      "mean_qlike": -287.07795777158657,
+      "mean_qlike_x1e_minus3": -0.28707795777158657
+    },
+    {
+      "model": "raw_prvm_ewma",
+      "input_matrix_key": "raw_prvm",
+      "ground_truth_matrix_key": "prvm",
+      "n_forecast_days": 395,
+      "first_target_date": "2025-03-01",
+      "last_target_date": "2026-03-30",
+      "mean_mspe": 0.004499982794858749,
+      "mean_mspe_x1e4": 44.99982794858749,
+      "mean_qlike": -286.7181193882683,
+      "mean_qlike_x1e_minus3": -0.2867181193882683
+    }
+  ],
+  "comparison": {
+    "mspe_delta_raw_minus_adjusted": 0.00017608444375692874,
+    "mspe_delta_raw_minus_adjusted_x1e4": 1.7608444375692873,
+    "qlike_delta_raw_minus_adjusted": 0.35983838331827656,
+    "qlike_delta_raw_minus_adjusted_x1e_minus3": 0.00035983838331827655,
+    "days_adjusted_lower_mspe": 308,
+    "days_adjusted_lower_qlike": 297,
+    "n_forecast_days": 395
+  },
+  "outputs": {
+    "summary_csv": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison_summary.csv",
+    "daily_csv": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison_daily.csv",
+    "npz": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison.npz",
+    "report_json": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison_report.json"
+  },
+  "interpretation_note": "Both models are evaluated against the same next-day jump-adjusted PRVM target. Positive raw-minus-adjusted deltas mean the jump-adjusted EWMA has lower loss."
+}

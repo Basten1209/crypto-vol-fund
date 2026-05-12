@@ -1,0 +1,3 @@
+model,input_matrix_key,ground_truth_matrix_key,n_forecast_days,first_target_date,last_target_date,mean_mspe,mean_mspe_x1e4,mean_qlike,mean_qlike_x1e_minus3
+jump_adjusted_prvm_ewma,prvm,prvm,395,2025-03-01,2026-03-30,0.00432389835110182,43.2389835110182,-287.07795777158657,-0.28707795777158657
+raw_prvm_ewma,raw_prvm,prvm,395,2025-03-01,2026-03-30,0.004499982794858749,44.99982794858749,-286.7181193882683,-0.2867181193882683
