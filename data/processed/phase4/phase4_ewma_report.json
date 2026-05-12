@@ -1,0 +1,42 @@
+{
+  "input_path": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase3/prvm_results.npz",
+  "output_dir": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4",
+  "params": {
+    "lambda": 0.94,
+    "init_days": 28,
+    "analysis_start": "2025-03-01",
+    "psd_floor": 1e-10,
+    "method": "recursive_seeded_riskmetrics_ewma"
+  },
+  "input_matrix_key": "prvm",
+  "ground_truth_matrix_key": "prvm",
+  "n_assets": 50,
+  "n_phase3_days": 423,
+  "n_forecast_days": 395,
+  "first_init_date": "2025-02-01",
+  "last_init_date": "2025-02-28",
+  "first_target_date": "2025-03-01",
+  "last_target_date": "2026-03-30",
+  "sanity": {
+    "all_finite": true,
+    "symmetry_error_forecast_max": 0.0,
+    "min_eig_forecast_min": 4.853024058107435e-05,
+    "forecast_shape": [
+      395,
+      50,
+      50
+    ],
+    "metrics_all_finite": true
+  },
+  "metrics_summary": {
+    "mean_mspe": 0.00432389835110182,
+    "mean_mspe_x1e4": 43.2389835110182,
+    "mean_qlike": -287.07795777158657,
+    "mean_qlike_x1e_minus3": -0.28707795777158657
+  },
+  "outputs": {
+    "npz": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4/ewma_forecasts.npz",
+    "metrics_csv": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4/ewma_metrics.csv",
+    "report_json": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4/phase4_ewma_report.json"
+  }
+}
