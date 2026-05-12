@@ -125,7 +125,8 @@ $$\hat{\Sigma}_{d+1|d} = (1-\lambda) \cdot \text{PRVM}_d + \lambda \cdot \hat{\S
 ### 파라미터
 - **λ = 0.94** (RiskMetrics 표준, 고정. Effective sample length ≈ 16.7일)
 - **초기값 Σ_0**: 첫 28일 PRVM의 단순 평균 (2025-02-01 ~ 2025-02-28)
-- **Rolling 28일 window**: 매일 update, 직전 28일 정보를 EWMA로 누적
+- **Recursive seeded EWMA**: 첫 forecast target은 2025-03-01이며, 이후에는 직전 forecast와 당일 PRVM으로 재귀 갱신
+- **28일의 의미**: rolling window가 아니라 초기값 산출 기간
 - 매트릭스 EWMA는 PSD 보존 (PSD 행렬의 convex combination)
 
 ### 평가 메트릭
