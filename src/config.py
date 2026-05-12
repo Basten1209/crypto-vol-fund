@@ -28,7 +28,7 @@ PSD_FLOOR         = 1e-10             # eigenvalue floor (QLIKE log det 용)
 
 # === EWMA ===
 LAMBDA_           = 0.94              # RiskMetrics 표준 (lambda는 Python 예약어)
-WINDOW            = 28                # rolling window (days)
+WINDOW            = 28                # EWMA 초기값 산출 기간 (days)
 EWMA_INIT_DAYS    = 28               # 초기값 계산용 일수
 
 # === Portfolio ===

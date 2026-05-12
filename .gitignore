@@ -1,6 +1,8 @@
 # 대용량 데이터 파일 (GitHub 100MB 제한 초과)
+price_panel.csv
 src/phase1_data/raw/
 src/phase1_data/price_panel.csv
+data/processed/phase3/*_long.csv
 
 # Python
 __pycache__/

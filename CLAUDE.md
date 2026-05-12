@@ -86,7 +86,7 @@ PSD_FLOOR         = 1e-10
 
 # === EWMA ===
 LAMBDA            = 0.94           # RiskMetrics 표준
-WINDOW            = 28             # 4주
+WINDOW            = 28             # EWMA 초기값 산출 기간
 EWMA_INIT_DAYS    = 28             # 초기값 sample mean 일수
 
 # === Portfolio ===
@@ -160,7 +160,7 @@ A: 24h × 60min = 1440. K = floor(√1440) ≈ 37 (Jacod et al. 2009 theoretical
 A: QLIKE 계산 시 log det(Σ) 필요. eigenvalue가 0이면 −∞ → numerical error.
 
 **Q: λ = 0.94 고정 이유?**
-A: RiskMetrics 표준. Effective sample length ≈ 16.7일로 28일 window와 잘 맞물림.
+A: RiskMetrics 표준. 첫 28일 PRVM 평균으로 초기화한 뒤 recursive EWMA로 매일 갱신한다. Effective sample length는 약 16.7일이다.
 
 **Q: 왜 stablecoin 제외?**
 A: USDT 등은 KRW 변동성이 BTC 대비 1/20 수준 → GMV가 stablecoin에 50%+ 몰아주어 "변동성 기반 펀드" 콘셉트 훼손.

@@ -1,0 +1,116 @@
+{
+  "input_path": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/price_panel.csv",
+  "output_dir": "data/processed/phase3",
+  "params": {
+    "m": 1440,
+    "k": 37,
+    "num_k": 1404,
+    "psi": 0.08333333333333333,
+    "jump_c0": 4,
+    "jump_alpha_u": 0.235,
+    "psd_floor": 1e-10
+  },
+  "chunk_size": 100000,
+  "workers": 4,
+  "limit_days": null,
+  "n_days": 423,
+  "first_date": "2025-02-01",
+  "last_date": "2026-03-30",
+  "n_assets": 50,
+  "tickers": [
+    "XRP",
+    "BTC",
+    "ETH",
+    "SOL",
+    "DOGE",
+    "AERGO",
+    "ADA",
+    "AUCTION",
+    "ONDO",
+    "SUI",
+    "VIRTUAL",
+    "ARDR",
+    "MOVE",
+    "AWE",
+    "XLM",
+    "AXS",
+    "SNT",
+    "QTUM",
+    "ANIME",
+    "PUNDIX",
+    "ARK",
+    "ENS",
+    "LINK",
+    "CRO",
+    "HBAR",
+    "VANA",
+    "SEI",
+    "STRAX",
+    "KNC",
+    "ME",
+    "SHIB",
+    "CBK",
+    "AQT",
+    "SAFE",
+    "GLM",
+    "PEPE",
+    "BONK",
+    "WAVES",
+    "MASK",
+    "ATH",
+    "TOKAMAK",
+    "CARV",
+    "MEW",
+    "MNT",
+    "PYTH",
+    "SONIC",
+    "GAS",
+    "AKT",
+    "BIGTIME",
+    "DRIFT"
+  ],
+  "arrays": {
+    "prvm_shape": [
+      423,
+      50,
+      50
+    ],
+    "raw_prvm_shape": [
+      423,
+      50,
+      50
+    ],
+    "jv_shape": [
+      423,
+      50,
+      50
+    ]
+  },
+  "skipped_days": [
+    {
+      "date": "2025-01-31",
+      "return_count": 539,
+      "reason": "not_full_day"
+    },
+    {
+      "date": "2026-03-31",
+      "return_count": 900,
+      "reason": "not_full_day"
+    }
+  ],
+  "sanity": {
+    "all_finite": true,
+    "min_eig_prvm_min": 9.999999956931094e-11,
+    "symmetry_error_prvm_max": 0.0,
+    "trace_prvm_min": 0.02100554618711262,
+    "trace_prvm_max": 0.9788006853582295,
+    "jump_trace_ratio_mean": 0.13441069869770741
+  },
+  "outputs": {
+    "npz": "data/processed/phase3/prvm_results.npz",
+    "daily_summary_csv": "data/processed/phase3/phase3_daily_summary.csv",
+    "prvm_long_csv": "data/processed/phase3/prvm_long.csv",
+    "jv_long_csv": "data/processed/phase3/jv_long.csv",
+    "report_json": "data/processed/phase3/phase3_prvm_report.json"
+  }
+}
