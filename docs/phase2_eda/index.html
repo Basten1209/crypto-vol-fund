@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Phase 2 EDA — 전체 리포트 인덱스</title>
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<style>
+  body { font-family: 'Noto Sans KR', sans-serif; padding: 30px; background: #f8f9fa; }
+  .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: box-shadow 0.2s; }
+  .badge-param { font-size: 0.8em; background: #e9ecef; color: #495057;
+                 border-radius: 6px; padding: 3px 8px; margin: 2px; display: inline-block; }
+  .finding-ok { color: #198754; font-weight: 600; }
+  .finding-warn { color: #fd7e14; font-weight: 600; }
+  h2 { margin-top: 40px; border-bottom: 2px solid #dee2e6; padding-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="container-fluid" style="max-width: 960px;">
+
+<h1 class="mb-1">Phase 2 EDA — 종합 리포트 인덱스</h1>
+<p class="text-muted mb-4">
+  분석 기간: 2025-03-01 ~ 2026-03-31 &nbsp;|&nbsp;
+  종목 수: 50 &nbsp;|&nbsp;
+  데이터: Upbit 1분봉
+</p>
+
+<!-- 핵심 파라미터 검증 결과 요약 -->
+<div class="card p-4 mb-4">
+  <h5 class="mb-3">핵심 파라미터 검증 결과 요약</h5>
+  <div class="row">
+    <div class="col-md-6">
+      <table class="table table-sm table-borderless">
+        <tbody>
+          <tr>
+            <td><strong>K = 37</strong> <span class="badge-param">floor(√1440)</span></td>
+            <td class="finding-ok">✅ 적절 — Signature Plot에서 1분봉 수준 수렴 확인</td>
+          </tr>
+          <tr>
+            <td><strong>c₀ = 4</strong> <span class="badge-param">jump 기준</span></td>
+            <td class="finding-ok">✅ 적절 — jump fraction ≈ 2.7% (학계 권장 1~5%)</td>
+          </tr>
+          <tr>
+            <td><strong>M = 1440</strong> <span class="badge-param">24h × 60min</span></td>
+            <td class="finding-ok">✅ 평균 유효 분봉 수 ≈ 1436 (결측 &lt; 0.3%)</td>
+          </tr>
+          <tr>
+            <td><strong>ANNUALIZATION = √365</strong></td>
+            <td class="finding-ok">✅ 24/7 거래 — 영업일 252 아닌 365 적용</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-md-6">
+      <table class="table table-sm table-borderless">
+        <tbody>
+          <tr>
+            <td>1분봉 평균 Excess Kurtosis</td>
+            <td><strong>179.35</strong> <span class="finding-ok">(Heavy-tail ✅)</span></td>
+          </tr>
+          <tr>
+            <td>전 종목 kurtosis &gt; 3</td>
+            <td><strong>50/50</strong> <span class="finding-ok">✅</span></td>
+          </tr>
+          <tr>
+            <td>평균 연환산 변동성</td>
+            <td><strong>94.3%</strong></td>
+          </tr>
+          <tr>
+            <td>평균 일별 Jump 횟수</td>
+            <td><strong>38.3회</strong> (전종목 합산)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 리포트 링크 카드 -->
+<h2>개별 분석 리포트</h2>
+<div class="row g-3 mt-1">
+
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h5>📊 수익률 분포 분석</h5>
+      <p class="text-muted small mb-2">
+        1분봉·일별 kurtosis 비교, Squared-Return ACF (Volatility Clustering), Std vs Kurtosis 산포도
+      </p>
+      <ul class="list-unstyled small mb-3">
+        <li>✅ Kurtosis Boxplot (종목별)</li>
+        <li>✅ 1분봉 vs 일별 Kurtosis 비교 Bar</li>
+        <li>✅ ACF Plot (대표 5종목)</li>
+      </ul>
+      <a href="distribution_report.html" class="btn btn-primary btn-sm">리포트 열기 →</a>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h5>📈 PRVM Signature Plot</h5>
+      <p class="text-muted small mb-2">
+        Sampling frequency(1/2/5/10/15/30분) 별 일평균 RV 계산, K=37 적절성 검증
+      </p>
+      <ul class="list-unstyled small mb-3">
+        <li>✅ Signature Plot (6개 frequency)</li>
+        <li>✅ 주파수별 RV 시계열</li>
+        <li>✅ Bias Ratio (1분봉 대비)</li>
+      </ul>
+      <a href="signature_plot_report.html" class="btn btn-primary btn-sm">리포트 열기 →</a>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h5>🔍 Noise:Signal Ratio 추정</h5>
+      <p class="text-muted small mb-2">
+        Aït-Sahalia, Mykland &amp; Zhang (2005) 방법론으로 50개 종목 전체 추정
+      </p>
+      <ul class="list-unstyled small mb-3">
+        <li>✅ 50개 종목 전체 noise-signal ratio</li>
+        <li>✅ Cross-asset 일별 시계열 (중앙값 + IQR)</li>
+        <li>✅ 종목별 요약 테이블</li>
+      </ul>
+      <a href="noise_signal_report.html" class="btn btn-primary btn-sm">리포트 열기 →</a>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h5>⚡ Jump Activity 분석</h5>
+      <p class="text-muted small mb-2">
+        BTC·ETH·XRP jump 시계열, c₀=2~6 민감도 분석, c₀=4 적절성 판정
+      </p>
+      <ul class="list-unstyled small mb-3">
+        <li>✅ Jump Variance 시계열 (BTC/ETH/XRP)</li>
+        <li>✅ c₀ 민감도: c₀ ∈ {2, 3, 4, 5, 6} 전범위</li>
+        <li>✅ 일별 jump 횟수 분포 히스토그램</li>
+      </ul>
+      <a href="jump_activity_report.html" class="btn btn-primary btn-sm">리포트 열기 →</a>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card p-3 h-100">
+      <h5>📋 50개 종목 요약 통계</h5>
+      <p class="text-muted small mb-2">
+        연환산 수익률·변동성(×√365), kurtosis, 일평균 유효 분봉 수
+      </p>
+      <ul class="list-unstyled small mb-3">
+        <li>✅ 50개 종목 전체 행 포함</li>
+        <li>✅ 연환산: ×√365 (24/7 기준)</li>
+        <li>✅ CSV + HTML 동시 저장</li>
+      </ul>
+      <div class="d-flex gap-2">
+        <a href="summary_stats.html" class="btn btn-primary btn-sm">HTML →</a>
+        <a href="summary_stats.csv" class="btn btn-outline-secondary btn-sm">CSV ↓</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="mt-5 pt-3 border-top text-muted small">
+  Phase 2 EDA — IMEN330 Term Project (2026) &nbsp;|&nbsp;
+  @iron-4842 &nbsp;|&nbsp;
+  생성: 2026-05-13
+</footer>
+
+</div>
+</body>
+</html>
