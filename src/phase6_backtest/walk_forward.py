@@ -17,7 +17,13 @@ if str(ROOT) not in sys.path:
 from src import config  # noqa: E402
 from src.phase6_backtest.benchmarks import equal_weight_targets, single_asset_targets  # noqa: E402
 from src.phase6_backtest.dm_test import diebold_mariano_test  # noqa: E402
-from src.phase6_backtest.metrics import performance_row  # noqa: E402
+from src.phase6_backtest.metrics import (  # noqa: E402
+    annualized_return,
+    annualized_volatility,
+    max_drawdown,
+    performance_row,
+    sharpe_ratio,
+)
 from src.utils import ensure_dir, repo_relative_path  # noqa: E402
 
 
@@ -165,6 +171,7 @@ def run_phase6_backtest(
     interval_df.to_csv(interval_path, index=False)
     performance_df.to_csv(performance_path, index=False)
     dm_df.to_csv(dm_path, index=False)
+    monthly_outputs = _write_monthly_comparison_outputs(output_dir, daily_df)
 
     report = {
         "price_panel_path": repo_relative_path(price_panel_path, ROOT),
@@ -192,6 +199,7 @@ def run_phase6_backtest(
             "performance_table_csv": repo_relative_path(performance_path, ROOT),
             "dm_test_csv": repo_relative_path(dm_path, ROOT),
             "report_json": repo_relative_path(report_path, ROOT),
+            **{name: repo_relative_path(path, ROOT) for name, path in monthly_outputs.items()},
         },
     }
     report_path.write_text(json.dumps(_json_ready(report), indent=2, allow_nan=False), encoding="utf-8")
@@ -205,6 +213,291 @@ def run_phase6_backtest(
     print(f"saved performance: {repo_relative_path(performance_path, ROOT)}")
     print(f"saved report: {repo_relative_path(report_path, ROOT)}")
     return report
+
+
+def _write_monthly_comparison_outputs(output_dir: Path, daily_df: pd.DataFrame) -> dict[str, Path]:
+    metrics_df = _monthly_strategy_metrics(daily_df)
+    if metrics_df.empty:
+        return {}
+
+    metrics_long_path = output_dir / "monthly_equal_weight_vs_minvar_metrics_long.csv"
+    metrics_wide_path = output_dir / "monthly_equal_weight_vs_minvar_metrics_wide.csv"
+    metrics_sheet_path = output_dir / "monthly_equal_weight_vs_minvar_metrics_sheet.md"
+    returns_long_path = output_dir / "monthly_equal_weight_vs_minvar_long.csv"
+    returns_wide_path = output_dir / "monthly_equal_weight_vs_minvar_wide.csv"
+    returns_sheet_path = output_dir / "monthly_equal_weight_vs_minvar_sheet.md"
+
+    metrics_df.to_csv(metrics_long_path, index=False)
+    _monthly_metrics_wide(metrics_df).to_csv(metrics_wide_path, index=False)
+    _write_monthly_metrics_markdown(metrics_sheet_path, metrics_df)
+
+    returns_df = _monthly_return_comparison(daily_df, metrics_df)
+    if not returns_df.empty:
+        returns_df.to_csv(returns_long_path, index=False)
+        _monthly_returns_wide(returns_df).to_csv(returns_wide_path, index=False)
+        _write_monthly_returns_markdown(returns_sheet_path, returns_df)
+
+    outputs = {
+        "monthly_metrics_long_csv": metrics_long_path,
+        "monthly_metrics_wide_csv": metrics_wide_path,
+        "monthly_metrics_sheet_md": metrics_sheet_path,
+    }
+    if not returns_df.empty:
+        outputs.update(
+            {
+                "monthly_returns_long_csv": returns_long_path,
+                "monthly_returns_wide_csv": returns_wide_path,
+                "monthly_returns_sheet_md": returns_sheet_path,
+            }
+        )
+    return outputs
+
+
+def _monthly_strategy_metrics(daily_df: pd.DataFrame) -> pd.DataFrame:
+    compare = daily_df[daily_df["strategy"].isin(["minimum_variance", "equal_weight"])].copy()
+    compare = compare[compare["cycle_days"].notna()]
+    compare = compare[compare["ending_active_count"] > 0]
+    if compare.empty:
+        return pd.DataFrame()
+
+    compare["date"] = pd.to_datetime(compare["date"])
+    compare["month"] = compare["date"].dt.to_period("M").astype(str)
+
+    rows: list[dict[str, Any]] = []
+    group_cols = ["month", "strategy", "rebalance_policy", "cycle_days"]
+    for (month, strategy, policy, cycle_days), group in compare.groupby(group_cols, sort=True):
+        ordered = group.sort_values("date")
+        daily_returns = ordered["daily_return"].to_numpy(dtype=np.float64)
+        equity = np.cumprod(1.0 + daily_returns)
+        rows.append(
+            {
+                "month": str(month),
+                "strategy": str(strategy),
+                "rebalance_policy": str(policy),
+                "cycle_days": int(cycle_days),
+                "hold_start": ordered["date"].iloc[0].date().isoformat(),
+                "hold_end": ordered["date"].iloc[-1].date().isoformat(),
+                "hold_days": int(len(ordered)),
+                "total_return": float(equity[-1] - 1.0),
+                "annualized_return": annualized_return(daily_returns, annualization=config.ANNUALIZATION),
+                "annualized_volatility": annualized_volatility(daily_returns, annualization=config.ANNUALIZATION),
+                "sharpe_ratio": sharpe_ratio(
+                    daily_returns,
+                    risk_free_rate=config.RISK_FREE_RATE,
+                    annualization=config.ANNUALIZATION,
+                ),
+                "max_drawdown": max_drawdown(equity),
+                "realized_risk_annualized_mean": float(ordered["realized_risk_annualized"].mean()),
+                "ending_top_weight_max": float(ordered["ending_top_weight"].max()),
+                "ending_active_count_mean": float(ordered["ending_active_count"].mean()),
+            }
+        )
+
+    metrics_df = pd.DataFrame(rows)
+    for column in [
+        "total_return",
+        "annualized_return",
+        "annualized_volatility",
+        "max_drawdown",
+        "realized_risk_annualized_mean",
+        "ending_top_weight_max",
+    ]:
+        metrics_df[f"{column}_pct"] = metrics_df[column] * 100.0
+    return metrics_df.sort_values(["rebalance_policy", "cycle_days", "month", "strategy"]).reset_index(drop=True)
+
+
+def _monthly_metrics_wide(metrics_df: pd.DataFrame) -> pd.DataFrame:
+    policies = _ordered_monthly_policies(metrics_df)
+    months = sorted(metrics_df["month"].unique())
+    cycles = sorted(metrics_df["cycle_days"].unique())
+    strategy_alias = {"equal_weight": "ew", "minimum_variance": "mv"}
+    metric_cols = [
+        "total_return",
+        "annualized_return",
+        "annualized_volatility",
+        "sharpe_ratio",
+        "max_drawdown",
+        "realized_risk_annualized_mean",
+        "ending_top_weight_max",
+        "ending_active_count_mean",
+    ]
+    rows: list[dict[str, Any]] = []
+    for policy in policies:
+        policy_df = metrics_df[metrics_df["rebalance_policy"] == policy]
+        for month in months:
+            row: dict[str, Any] = {"rebalance_policy": policy, "month": month}
+            for cycle in cycles:
+                cycle_month = policy_df[(policy_df["month"] == month) & (policy_df["cycle_days"] == cycle)]
+                by_strategy = {item["strategy"]: item for item in cycle_month.to_dict(orient="records")}
+                for metric in metric_cols:
+                    for strategy in ["equal_weight", "minimum_variance"]:
+                        values = by_strategy.get(strategy)
+                        row[f"{metric}_{int(cycle)}d_{strategy_alias[strategy]}"] = values.get(metric) if values else np.nan
+                ew = by_strategy.get("equal_weight", {})
+                mv = by_strategy.get("minimum_variance", {})
+                for metric in ["total_return", "annualized_volatility", "sharpe_ratio", "max_drawdown"]:
+                    row[f"{metric}_{int(cycle)}d_mv_minus_ew"] = _safe_subtract(mv.get(metric), ew.get(metric))
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _monthly_return_comparison(daily_df: pd.DataFrame, metrics_df: pd.DataFrame) -> pd.DataFrame:
+    policy = _default_monthly_policy(metrics_df)
+    filtered = metrics_df[metrics_df["rebalance_policy"] == policy]
+    btc = daily_df[daily_df["strategy"] == "btc_hodl"].copy()
+    if not btc.empty:
+        btc["date"] = pd.to_datetime(btc["date"])
+
+    rows: list[dict[str, Any]] = []
+    for (month, cycle_days), group in filtered.groupby(["month", "cycle_days"], sort=True):
+        by_strategy = {item["strategy"]: item for item in group.to_dict(orient="records")}
+        minimum_variance = by_strategy.get("minimum_variance")
+        equal_weight = by_strategy.get("equal_weight")
+        if not minimum_variance or not equal_weight:
+            continue
+        hold_start = str(minimum_variance["hold_start"])
+        hold_end = str(minimum_variance["hold_end"])
+        btc_return = np.nan
+        if not btc.empty:
+            btc_window = btc[(btc["date"] >= pd.Timestamp(hold_start)) & (btc["date"] <= pd.Timestamp(hold_end))]
+            if not btc_window.empty:
+                btc_return = float(np.prod(1.0 + btc_window["daily_return"].to_numpy(dtype=np.float64)) - 1.0)
+        mv_return = float(minimum_variance["total_return"])
+        ew_return = float(equal_weight["total_return"])
+        rows.append(
+            {
+                "month": str(month),
+                "cycle_days": int(cycle_days),
+                "hold_start": hold_start,
+                "hold_end": hold_end,
+                "hold_days": int(minimum_variance["hold_days"]),
+                "minimum_variance_return": mv_return,
+                "equal_weight_return": ew_return,
+                "btc_same_window_return": btc_return,
+                "mv_minus_ew": mv_return - ew_return,
+                "mv_minus_btc_same_window": _safe_subtract(mv_return, btc_return),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _monthly_returns_wide(returns_df: pd.DataFrame) -> pd.DataFrame:
+    months = sorted(returns_df["month"].unique())
+    cycles = sorted(returns_df["cycle_days"].unique())
+    value_cols = ["minimum_variance_return", "equal_weight_return", "mv_minus_ew"]
+    rows: list[dict[str, Any]] = []
+    for month in months:
+        row: dict[str, Any] = {"month": month}
+        month_df = returns_df[returns_df["month"] == month]
+        for value_col in value_cols:
+            for cycle in cycles:
+                values = month_df[month_df["cycle_days"] == cycle]
+                row[f"{value_col}_{int(cycle)}d"] = float(values[value_col].iloc[0]) if not values.empty else np.nan
+        for value_col in value_cols:
+            for cycle in cycles:
+                raw_value = row.get(f"{value_col}_{int(cycle)}d")
+                row[f"{value_col}_{int(cycle)}d_pct"] = raw_value * 100.0 if np.isfinite(raw_value) else np.nan
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _write_monthly_metrics_markdown(path: Path, metrics_df: pd.DataFrame) -> None:
+    lines = [
+        "# Monthly Equal-Weight vs Minimum-Variance Metrics Sheet",
+        "",
+        "- Portfolio: monthly cap25 minimum variance versus equal-weight.",
+        "- Policies shown: `enter_once_then_drift` and `daily_rebalance_to_target` when both are available.",
+        "- Metrics are computed on active daily rows inside each month.",
+        "- Annualized metrics use 365-day crypto annualization, so very short windows can annualize aggressively.",
+        "",
+    ]
+    for policy in _ordered_monthly_policies(metrics_df):
+        policy_df = metrics_df[metrics_df["rebalance_policy"] == policy]
+        for cycle in sorted(policy_df["cycle_days"].unique()):
+            lines.extend(
+                [
+                    f"## {policy} - {int(cycle)}-Day Hold Window",
+                    "",
+                    "| Month | MV Return | EW Return | MV Ann.Vol | EW Ann.Vol | MV Sharpe | EW Sharpe | MV MDD | EW MDD |",
+                    "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+                ]
+            )
+            cycle_df = policy_df[policy_df["cycle_days"] == cycle]
+            for month in sorted(cycle_df["month"].unique()):
+                month_df = cycle_df[cycle_df["month"] == month]
+                by_strategy = {item["strategy"]: item for item in month_df.to_dict(orient="records")}
+                mv = by_strategy.get("minimum_variance")
+                ew = by_strategy.get("equal_weight")
+                if not mv or not ew:
+                    continue
+                lines.append(
+                    "| {month} | {mv_return} | {ew_return} | {mv_vol} | {ew_vol} | {mv_sharpe} | {ew_sharpe} | {mv_mdd} | {ew_mdd} |".format(
+                        month=month,
+                        mv_return=_fmt_pct(mv["total_return"]),
+                        ew_return=_fmt_pct(ew["total_return"]),
+                        mv_vol=_fmt_pct(mv["annualized_volatility"]),
+                        ew_vol=_fmt_pct(ew["annualized_volatility"]),
+                        mv_sharpe=_fmt_num(mv["sharpe_ratio"]),
+                        ew_sharpe=_fmt_num(ew["sharpe_ratio"]),
+                        mv_mdd=_fmt_pct(mv["max_drawdown"]),
+                        ew_mdd=_fmt_pct(ew["max_drawdown"]),
+                    )
+                )
+            lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _write_monthly_returns_markdown(path: Path, returns_df: pd.DataFrame) -> None:
+    lines = [
+        "# Monthly Equal-Weight vs Minimum-Variance Sheet",
+        "",
+        "- Universe: selected 50 Upbit KRW assets.",
+        "- Portfolio: monthly cap25 minimum variance versus equal-weight.",
+        "- Rebalance date: first available date of each month.",
+        "- Holding windows: first 7 days and first 14 days of each month.",
+        "- Values below are hold-window returns, not full-month invested returns.",
+        "",
+        "| Month | MV 7D | EW 7D | MV-EW 7D | MV 14D | EW 14D | MV-EW 14D |",
+        "|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    for month in sorted(returns_df["month"].unique()):
+        month_df = returns_df[returns_df["month"] == month]
+        by_cycle = {int(row["cycle_days"]): row for row in month_df.to_dict(orient="records")}
+        cycle_7 = by_cycle.get(7, {})
+        cycle_14 = by_cycle.get(14, {})
+        lines.append(
+            "| {month} | {mv7} | {ew7} | {diff7} | {mv14} | {ew14} | {diff14} |".format(
+                month=month,
+                mv7=_fmt_pct(cycle_7.get("minimum_variance_return")),
+                ew7=_fmt_pct(cycle_7.get("equal_weight_return")),
+                diff7=_fmt_pct(cycle_7.get("mv_minus_ew")),
+                mv14=_fmt_pct(cycle_14.get("minimum_variance_return")),
+                ew14=_fmt_pct(cycle_14.get("equal_weight_return")),
+                diff14=_fmt_pct(cycle_14.get("mv_minus_ew")),
+            )
+        )
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _default_monthly_policy(metrics_df: pd.DataFrame) -> str:
+    policies = set(metrics_df["rebalance_policy"].dropna().astype(str))
+    if "enter_once_then_drift" in policies:
+        return "enter_once_then_drift"
+    return sorted(policies)[0]
+
+
+def _ordered_monthly_policies(metrics_df: pd.DataFrame) -> list[str]:
+    preferred = ["enter_once_then_drift", "daily_rebalance_to_target"]
+    policies = set(metrics_df["rebalance_policy"].dropna().astype(str))
+    ordered = [policy for policy in preferred if policy in policies]
+    ordered.extend(sorted(policies.difference(ordered)))
+    return ordered
+
+
+def _safe_subtract(left: float | None, right: float | None) -> float:
+    if left is None or right is None or not np.isfinite(left) or not np.isfinite(right):
+        return float("nan")
+    return float(left - right)
 
 
 def _json_ready(value):

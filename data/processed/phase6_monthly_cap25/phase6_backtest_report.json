@@ -225,6 +225,12 @@
     "interval_returns_csv": "data/processed/phase6_monthly_cap25/phase6_interval_returns.csv",
     "performance_table_csv": "data/processed/phase6_monthly_cap25/phase6_performance_table.csv",
     "dm_test_csv": "data/processed/phase6_monthly_cap25/phase6_dm_test.csv",
-    "report_json": "data/processed/phase6_monthly_cap25/phase6_backtest_report.json"
+    "report_json": "data/processed/phase6_monthly_cap25/phase6_backtest_report.json",
+    "monthly_metrics_long_csv": "data/processed/phase6_monthly_cap25/monthly_equal_weight_vs_minvar_metrics_long.csv",
+    "monthly_metrics_wide_csv": "data/processed/phase6_monthly_cap25/monthly_equal_weight_vs_minvar_metrics_wide.csv",
+    "monthly_metrics_sheet_md": "data/processed/phase6_monthly_cap25/monthly_equal_weight_vs_minvar_metrics_sheet.md",
+    "monthly_returns_long_csv": "data/processed/phase6_monthly_cap25/monthly_equal_weight_vs_minvar_long.csv",
+    "monthly_returns_wide_csv": "data/processed/phase6_monthly_cap25/monthly_equal_weight_vs_minvar_wide.csv",
+    "monthly_returns_sheet_md": "data/processed/phase6_monthly_cap25/monthly_equal_weight_vs_minvar_sheet.md"
   }
 }
