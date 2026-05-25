@@ -24,7 +24,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src import config  # noqa: E402
-from src.utils import ensure_dir, project_psd  # noqa: E402
+from src.utils import ensure_dir, project_psd, repo_relative_path  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -393,8 +393,8 @@ def _write_outputs(
         "jump_trace_ratio_mean": float(summary_df["jump_trace_ratio"].mean()),
     }
     report = {
-        "input_path": str(input_path),
-        "output_dir": str(output_dir),
+        "input_path": repo_relative_path(input_path, ROOT),
+        "output_dir": repo_relative_path(output_dir, ROOT),
         "params": params.to_dict(),
         "chunk_size": chunk_size,
         "workers": workers,
@@ -412,11 +412,11 @@ def _write_outputs(
         "skipped_days": skipped_days,
         "sanity": sanity,
         "outputs": {
-            "npz": str(npz_path),
-            "daily_summary_csv": str(summary_path),
-            "prvm_long_csv": str(prvm_long_path) if write_long_csv else None,
-            "jv_long_csv": str(jv_long_path) if write_long_csv else None,
-            "report_json": str(report_path),
+            "npz": repo_relative_path(npz_path, ROOT),
+            "daily_summary_csv": repo_relative_path(summary_path, ROOT),
+            "prvm_long_csv": repo_relative_path(prvm_long_path, ROOT) if write_long_csv else None,
+            "jv_long_csv": repo_relative_path(jv_long_path, ROOT) if write_long_csv else None,
+            "report_json": repo_relative_path(report_path, ROOT),
         },
     }
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")

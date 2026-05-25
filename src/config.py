@@ -32,7 +32,7 @@ WINDOW            = 28                # EWMA 초기값 산출 기간 (days)
 EWMA_INIT_DAYS    = 28               # 초기값 계산용 일수
 
 # === Portfolio ===
-GMV_C0            = 1                 # gross exposure (long-only)
+MIN_VAR_C0        = 1                 # gross exposure (long-only)
 SINGLE_ASSET_CAP  = None             # 단일종목 cap (없음, Phase 6 후 재검토)
 
 # === Backtest ===

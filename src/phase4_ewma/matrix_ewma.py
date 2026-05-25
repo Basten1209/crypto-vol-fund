@@ -21,7 +21,7 @@ if str(ROOT) not in sys.path:
 
 from src import config  # noqa: E402
 from src.phase4_ewma.forecast_evaluator import calculate_daily_mspe, calculate_daily_qlike  # noqa: E402
-from src.utils import ensure_dir, project_psd  # noqa: E402
+from src.utils import ensure_dir, project_psd, repo_relative_path  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -239,8 +239,8 @@ def _write_outputs(output_dir: Path, input_path: Path, result: dict[str, Any]) -
         "mean_qlike_x1e_minus3": float(np.mean(result["qlike"]) * 1e-3),
     }
     report = {
-        "input_path": str(input_path),
-        "output_dir": str(output_dir),
+        "input_path": repo_relative_path(input_path, ROOT),
+        "output_dir": repo_relative_path(output_dir, ROOT),
         "params": params.to_dict(),
         "input_matrix_key": result["input_matrix_key"],
         "ground_truth_matrix_key": result["ground_truth_matrix_key"],
@@ -254,9 +254,9 @@ def _write_outputs(output_dir: Path, input_path: Path, result: dict[str, Any]) -
         "sanity": sanity,
         "metrics_summary": metrics_summary,
         "outputs": {
-            "npz": str(npz_path),
-            "metrics_csv": str(metrics_path),
-            "report_json": str(report_path),
+            "npz": repo_relative_path(npz_path, ROOT),
+            "metrics_csv": repo_relative_path(metrics_path, ROOT),
+            "report_json": repo_relative_path(report_path, ROOT),
         },
     }
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")

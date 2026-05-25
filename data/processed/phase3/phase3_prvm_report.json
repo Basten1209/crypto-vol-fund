@@ -1,5 +1,5 @@
 {
-  "input_path": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/price_panel.csv",
+  "input_path": "price_panel.csv",
   "output_dir": "data/processed/phase3",
   "params": {
     "m": 1440,

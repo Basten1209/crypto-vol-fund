@@ -1,6 +1,6 @@
 {
-  "input_path": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase3/prvm_results.npz",
-  "output_dir": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison",
+  "input_path": "data/processed/phase3/prvm_results.npz",
+  "output_dir": "data/processed/phase4_comparison",
   "target_matrix_key": "prvm",
   "params": {
     "lambda": 0.94,
@@ -45,10 +45,10 @@
     "n_forecast_days": 395
   },
   "outputs": {
-    "summary_csv": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison_summary.csv",
-    "daily_csv": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison_daily.csv",
-    "npz": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison.npz",
-    "report_json": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4_comparison/phase4_ewma_comparison_report.json"
+    "summary_csv": "data/processed/phase4_comparison/phase4_ewma_comparison_summary.csv",
+    "daily_csv": "data/processed/phase4_comparison/phase4_ewma_comparison_daily.csv",
+    "npz": "data/processed/phase4_comparison/phase4_ewma_comparison.npz",
+    "report_json": "data/processed/phase4_comparison/phase4_ewma_comparison_report.json"
   },
   "interpretation_note": "Both models are evaluated against the same next-day jump-adjusted PRVM target. Positive raw-minus-adjusted deltas mean the jump-adjusted EWMA has lower loss."
 }

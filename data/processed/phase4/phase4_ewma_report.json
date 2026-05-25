@@ -1,6 +1,6 @@
 {
-  "input_path": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase3/prvm_results.npz",
-  "output_dir": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4",
+  "input_path": "data/processed/phase3/prvm_results.npz",
+  "output_dir": "data/processed/phase4",
   "params": {
     "lambda": 0.94,
     "init_days": 28,
@@ -35,8 +35,8 @@
     "mean_qlike_x1e_minus3": -0.28707795777158657
   },
   "outputs": {
-    "npz": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4/ewma_forecasts.npz",
-    "metrics_csv": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4/ewma_metrics.csv",
-    "report_json": "/Users/seungjun/conductor/workspaces/crypto-vol-fund/rio-de-janeiro/data/processed/phase4/phase4_ewma_report.json"
+    "npz": "data/processed/phase4/ewma_forecasts.npz",
+    "metrics_csv": "data/processed/phase4/ewma_metrics.csv",
+    "report_json": "data/processed/phase4/phase4_ewma_report.json"
   }
 }

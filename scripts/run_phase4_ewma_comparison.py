@@ -17,7 +17,7 @@ if str(ROOT) not in sys.path:
 
 from src import config  # noqa: E402
 from src.phase4_ewma.matrix_ewma import EWMAParams, compute_ewma_forecasts  # noqa: E402
-from src.utils import ensure_dir  # noqa: E402
+from src.utils import ensure_dir, repo_relative_path  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -165,17 +165,17 @@ def run_comparison(
         "n_forecast_days": int(len(adjusted["target_dates"])),
     }
     report = {
-        "input_path": str(input_path),
-        "output_dir": str(output_dir),
+        "input_path": repo_relative_path(input_path, ROOT),
+        "output_dir": repo_relative_path(output_dir, ROOT),
         "target_matrix_key": "prvm",
         "params": params.to_dict(),
         "summary": summary_rows,
         "comparison": comparison,
         "outputs": {
-            "summary_csv": str(summary_path),
-            "daily_csv": str(daily_path),
-            "npz": str(npz_path),
-            "report_json": str(report_path),
+            "summary_csv": repo_relative_path(summary_path, ROOT),
+            "daily_csv": repo_relative_path(daily_path, ROOT),
+            "npz": repo_relative_path(npz_path, ROOT),
+            "report_json": repo_relative_path(report_path, ROOT),
         },
         "interpretation_note": (
             "Both models are evaluated against the same next-day jump-adjusted PRVM target. "

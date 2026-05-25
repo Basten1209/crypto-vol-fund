@@ -3,6 +3,8 @@
 - PSD projection (eigenvalue floor)
 - I/O 헬퍼
 """
+from __future__ import annotations
+
 import numpy as np
 from pathlib import Path
 
@@ -28,3 +30,13 @@ def ensure_dir(path: Path) -> Path:
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def repo_relative_path(path: Path, root: Path | None = None) -> str:
+    """Return a stable repo-relative path when the path is inside the repo."""
+    root = Path.cwd() if root is None else Path(root)
+    path = Path(path)
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(path)
