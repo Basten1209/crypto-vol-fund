@@ -1,0 +1,3 @@
+comparison,cycle_days,loss,n_obs,lag,mean_loss_diff,dm_stat,p_value
+minimum_variance_vs_equal_weight,7,squared_daily_return,395,6,-0.0005162319018527848,-5.5210368362252105,3.370051140459638e-08
+minimum_variance_vs_equal_weight,14,squared_daily_return,395,13,-0.000463616724743904,-4.358804277029986,1.3077500312730161e-05

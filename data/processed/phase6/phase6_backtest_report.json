@@ -1,0 +1,117 @@
+{
+  "price_panel_path": "price_panel.csv",
+  "portfolio_path": "data/processed/phase5/minimum_variance_portfolios.npz",
+  "output_dir": "data/processed/phase6",
+  "params": {
+    "eval_freq_min": 10,
+    "annualization": 365,
+    "risk_free_rate": 0.0,
+    "transaction_costs": "ignored",
+    "weight_drift": "enabled_between_rebalances"
+  },
+  "n_assets": 50,
+  "n_backtest_days": 395,
+  "first_date": "2025-03-01",
+  "last_date": "2026-03-30",
+  "performance": [
+    {
+      "strategy": "btc_hodl",
+      "cycle_days": null,
+      "n_days": 395,
+      "total_return": -0.1848013816925641,
+      "annualized_return": -0.17205226791422923,
+      "annualized_volatility": 0.4124484818482557,
+      "sharpe_ratio": -0.25166722648960665,
+      "max_drawdown": -0.47705891273456125,
+      "calmar_ratio": -0.3606520354645596,
+      "information_ratio_vs_btc": null,
+      "turnover_mean": null,
+      "realized_risk_annualized_mean": null
+    },
+    {
+      "strategy": "minimum_variance",
+      "cycle_days": 7.0,
+      "n_days": 395,
+      "total_return": -0.4652327265723486,
+      "annualized_return": -0.43919673775276014,
+      "annualized_volatility": 0.42174164003082276,
+      "sharpe_ratio": -1.1566418358660273,
+      "max_drawdown": -0.5661153166983381,
+      "calmar_ratio": -0.7758079048526995,
+      "information_ratio_vs_btc": -1.6494680612969213,
+      "turnover_mean": 0.29605324891465257,
+      "realized_risk_annualized_mean": 0.35136001339078143
+    },
+    {
+      "strategy": "equal_weight",
+      "cycle_days": 7.0,
+      "n_days": 395,
+      "total_return": -0.5767287953294882,
+      "annualized_return": -0.5481681974741179,
+      "annualized_volatility": 0.6435283199150734,
+      "sharpe_ratio": -0.9077154155023421,
+      "max_drawdown": -0.6549004163322121,
+      "calmar_ratio": -0.8370252694969246,
+      "information_ratio_vs_btc": -1.1286982320762593,
+      "turnover_mean": 0.05644856706132999,
+      "realized_risk_annualized_mean": 0.5506947632205148
+    },
+    {
+      "strategy": "minimum_variance",
+      "cycle_days": 14.0,
+      "n_days": 395,
+      "total_return": -0.48201850449626826,
+      "annualized_return": -0.455482430367534,
+      "annualized_volatility": 0.43369246780337617,
+      "sharpe_ratio": -1.181317054283098,
+      "max_drawdown": -0.5715601565878091,
+      "calmar_ratio": -0.7969107452953781,
+      "information_ratio_vs_btc": -1.717098009569113,
+      "turnover_mean": 0.3679002082336679,
+      "realized_risk_annualized_mean": 0.35873253680336675
+    },
+    {
+      "strategy": "equal_weight",
+      "cycle_days": 14.0,
+      "n_days": 395,
+      "total_return": -0.5869429018358951,
+      "annualized_return": -0.5582527238039204,
+      "annualized_volatility": 0.6443608081437635,
+      "sharpe_ratio": -0.9407534034915531,
+      "max_drawdown": -0.6558344778675651,
+      "calmar_ratio": -0.8512097833268386,
+      "information_ratio_vs_btc": -1.1769298872307958,
+      "turnover_mean": 0.08043815901657078,
+      "realized_risk_annualized_mean": 0.5510683355244608
+    }
+  ],
+  "dm_tests": [
+    {
+      "comparison": "minimum_variance_vs_equal_weight",
+      "cycle_days": 7,
+      "loss": "squared_daily_return",
+      "n_obs": 395,
+      "lag": 6,
+      "mean_loss_diff": -0.0006464314485503231,
+      "dm_stat": -5.41792671381233,
+      "p_value": 6.029411928905876e-08
+    },
+    {
+      "comparison": "minimum_variance_vs_equal_weight",
+      "cycle_days": 14,
+      "loss": "squared_daily_return",
+      "n_obs": 395,
+      "lag": 13,
+      "mean_loss_diff": -0.0006214365567145716,
+      "dm_stat": -5.126027333334562,
+      "p_value": 2.9591966422141634e-07
+    }
+  ],
+  "outputs": {
+    "daily_returns_csv": "data/processed/phase6/phase6_daily_returns.csv",
+    "interval_returns_csv": "data/processed/phase6/phase6_interval_returns.csv",
+    "performance_table_csv": "data/processed/phase6/phase6_performance_table.csv",
+    "dm_test_csv": "data/processed/phase6/phase6_dm_test.csv",
+    "report_json": "data/processed/phase6/phase6_backtest_report.json"
+  }
+}

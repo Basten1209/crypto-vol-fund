@@ -1,0 +1,5 @@
+comparison,rebalance_policy,cycle_days,loss,n_obs,lag,mean_loss_diff,dm_stat,p_value
+minimum_variance_vs_equal_weight,enter_once_then_drift,7,squared_daily_return,395,6,-0.00011900097542465966,-1.7646915493530486,0.07761561961600719
+minimum_variance_vs_equal_weight,daily_rebalance_to_target,7,squared_daily_return,395,6,-0.00012078132555826056,-1.8854612450252288,0.059367592031145604
+minimum_variance_vs_equal_weight,enter_once_then_drift,14,squared_daily_return,395,13,-0.0002816885959262384,-2.822993847932525,0.0047577484560443984
+minimum_variance_vs_equal_weight,daily_rebalance_to_target,14,squared_daily_return,395,13,-0.0002803710067611472,-2.896739063655924,0.0037706323327815557
