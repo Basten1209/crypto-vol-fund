@@ -1,0 +1,93 @@
+{
+  "forecast_path": "data/processed/phase4/ewma_forecasts.npz",
+  "prvm_path": "data/processed/phase3/prvm_results.npz",
+  "output_dir": "data/processed/phase5_monthly_cap25",
+  "params": {
+    "cycles": [
+      7,
+      14
+    ],
+    "rebalance_frequency": "monthly",
+    "gross_exposure": 1,
+    "single_asset_cap": 0.25,
+    "psd_floor": 1e-10,
+    "active_tol": 1e-06,
+    "kkt_tol": 1e-08,
+    "max_active_iter": 500,
+    "max_projected_gradient_iter": 20000,
+    "method": "active_set_long_only_minimum_variance"
+  },
+  "limit_rebalances": null,
+  "n_assets": 50,
+  "n_forecast_days": 395,
+  "cycle_summary": {
+    "7": {
+      "n_rebalances": 13,
+      "first_rebalance_date": "2025-03-01",
+      "last_rebalance_date": "2026-03-01",
+      "active_count_mean": 14.153846153846153,
+      "active_count_min": 8,
+      "active_count_max": 20,
+      "top_weight_mean": 0.25,
+      "top_weight_max": 0.25,
+      "turnover_mean": 0.6535088257959104,
+      "kkt_violation_max": 4.336808689942018e-19,
+      "weight_sum_error_max": 0.0,
+      "single_asset_cap_violation_max": 0.0,
+      "min_weight_min": 5.782411586588042e-19,
+      "solver_status_counts": {
+        "optimal_capped_active_set": 13
+      }
+    },
+    "14": {
+      "n_rebalances": 13,
+      "first_rebalance_date": "2025-03-01",
+      "last_rebalance_date": "2026-03-01",
+      "active_count_mean": 14.153846153846153,
+      "active_count_min": 8,
+      "active_count_max": 20,
+      "top_weight_mean": 0.25,
+      "top_weight_max": 0.25,
+      "turnover_mean": 0.6535088257959104,
+      "kkt_violation_max": 4.336808689942018e-19,
+      "weight_sum_error_max": 0.0,
+      "single_asset_cap_violation_max": 0.0,
+      "min_weight_min": 5.782411586588042e-19,
+      "solver_status_counts": {
+        "optimal_capped_active_set": 13
+      }
+    }
+  },
+  "product_interpretation": {
+    "positioning": "monthly_virtual_asset_model_portfolio_after_phase6_validation",
+    "not_ready_as_public_fund_product": true,
+    "reason": "Phase 5 only produces optimized weights. Backtested returns, drawdowns, benchmark comparison, turnover impact, and execution assumptions must be evaluated in Phase 6 before any product-like framing.",
+    "concentration_risk": {
+      "top_weight_mean_max_across_cycles": 0.25,
+      "top_weight_max_across_cycles": 0.25,
+      "requires_phase6_cap_review": false,
+      "note": "A 25% single-asset cap is active. This directly limits concentration, but the capped strategy still needs Phase 6 comparison against equal-weight and the uncapped variant."
+    },
+    "candidate_next_steps": [
+      "Complete Phase 6 backtest against equal-weight on the same 50-asset universe.",
+      "Compare capped versus uncapped minimum variance on return, volatility, drawdown, and turnover.",
+      "Use BTC HODL as market context rather than the primary benchmark.",
+      "Use research wording such as monthly virtual asset model portfolio rather than public fund wording."
+    ]
+  },
+  "sanity": {
+    "all_weight_sums_close_to_one": true,
+    "all_weights_long_only": true,
+    "all_weights_within_single_asset_cap": true,
+    "max_kkt_violation": 4.336808689942018e-19
+  },
+  "interpretation_note": "Scheduled weights repeat each rebalance weight across its hold window for date alignment. They are not drifted realized portfolio weights; Phase 6 should compute hold-period drift from returns.",
+  "outputs": {
+    "npz": "data/processed/phase5_monthly_cap25/minimum_variance_portfolios.npz",
+    "weights_long_csv": "data/processed/phase5_monthly_cap25/minimum_variance_weights_long.csv",
+    "weights_wide_csv": "data/processed/phase5_monthly_cap25/minimum_variance_weights_wide.csv",
+    "scheduled_weights_long_csv": "data/processed/phase5_monthly_cap25/minimum_variance_scheduled_weights_long.csv",
+    "summary_csv": "data/processed/phase5_monthly_cap25/phase5_portfolio_summary.csv",
+    "report_json": "data/processed/phase5_monthly_cap25/phase5_portfolio_report.json"
+  }
+}
