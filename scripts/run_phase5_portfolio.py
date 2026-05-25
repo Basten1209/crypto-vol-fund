@@ -55,6 +55,12 @@ def parse_args() -> argparse.Namespace:
         help="Optional single-asset weight cap, e.g. 0.25 for 25%. Default: no cap.",
     )
     parser.add_argument(
+        "--min-asset-weight",
+        type=float,
+        default=None,
+        help=f"Minimum positive asset weight after pruning. Default: {config.MIN_ASSET_WEIGHT}",
+    )
+    parser.add_argument(
         "--rebalance-frequency",
         choices=["cycle", "monthly"],
         default="cycle",
@@ -72,6 +78,7 @@ def main() -> int:
         cycles=args.cycles,
         limit_rebalances=args.limit_rebalances,
         single_asset_cap=args.single_asset_cap,
+        min_asset_weight=args.min_asset_weight,
         rebalance_frequency=args.rebalance_frequency,
     )
     return 0

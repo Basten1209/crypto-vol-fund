@@ -226,6 +226,7 @@ def _write_monthly_comparison_outputs(output_dir: Path, daily_df: pd.DataFrame) 
     returns_long_path = output_dir / "monthly_equal_weight_vs_minvar_long.csv"
     returns_wide_path = output_dir / "monthly_equal_weight_vs_minvar_wide.csv"
     returns_sheet_path = output_dir / "monthly_equal_weight_vs_minvar_sheet.md"
+    monthly_hold_window_returns_path = output_dir / "monthly_hold_window_returns.csv"
 
     metrics_df.to_csv(metrics_long_path, index=False)
     _monthly_metrics_wide(metrics_df).to_csv(metrics_wide_path, index=False)
@@ -234,6 +235,7 @@ def _write_monthly_comparison_outputs(output_dir: Path, daily_df: pd.DataFrame) 
     returns_df = _monthly_return_comparison(daily_df, metrics_df)
     if not returns_df.empty:
         returns_df.to_csv(returns_long_path, index=False)
+        returns_df.to_csv(monthly_hold_window_returns_path, index=False)
         _monthly_returns_wide(returns_df).to_csv(returns_wide_path, index=False)
         _write_monthly_returns_markdown(returns_sheet_path, returns_df)
 
@@ -246,6 +248,7 @@ def _write_monthly_comparison_outputs(output_dir: Path, daily_df: pd.DataFrame) 
         outputs.update(
             {
                 "monthly_returns_long_csv": returns_long_path,
+                "monthly_hold_window_returns_csv": monthly_hold_window_returns_path,
                 "monthly_returns_wide_csv": returns_wide_path,
                 "monthly_returns_sheet_md": returns_sheet_path,
             }

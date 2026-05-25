@@ -12,23 +12,23 @@
 | Strategy | Policy | Cycle | Total Return | Ann. Return | Ann. Vol | Sharpe | MDD | IR vs BTC | Turnover Mean | Turnover Sum | Realized Risk |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | btc_hodl | buy_and_hold |  | -18.48% | -17.21% | 41.24% | -0.2517 | -47.71% | n/a | n/a | 0.0000 | n/a |
-| minimum_variance | enter_once_then_drift | 7 | -7.47% | -6.92% | 33.14% | -0.0508 | -28.54% | 0.2488 | 1.0000 | 13.0000 | 11.15% |
+| minimum_variance | enter_once_then_drift | 7 | -7.48% | -6.93% | 33.14% | -0.0510 | -28.54% | 0.2486 | 1.0000 | 13.0000 | 11.15% |
 | equal_weight | enter_once_then_drift | 7 | -23.02% | -21.47% | 39.16% | -0.4172 | -36.94% | -0.1670 | 1.0000 | 13.0000 | 14.00% |
-| minimum_variance | daily_rebalance_to_target | 7 | -7.47% | -6.92% | 32.77% | -0.0546 | -28.44% | 0.2472 | 0.1503 | 14.5252 | 10.99% |
+| minimum_variance | daily_rebalance_to_target | 7 | -7.47% | -6.93% | 32.77% | -0.0548 | -28.44% | 0.2469 | 0.1503 | 14.5251 | 10.99% |
 | equal_weight | daily_rebalance_to_target | 7 | -22.12% | -20.63% | 38.93% | -0.3946 | -36.16% | -0.1402 | 0.1525 | 14.7271 | 13.94% |
-| minimum_variance | enter_once_then_drift | 14 | 29.51% | 26.99% | 40.56% | 0.7917 | -29.06% | 1.2838 | 1.0000 | 13.0000 | 21.56% |
+| minimum_variance | enter_once_then_drift | 14 | 29.51% | 26.99% | 40.56% | 0.7918 | -29.06% | 1.2839 | 1.0000 | 13.0000 | 21.56% |
 | equal_weight | enter_once_then_drift | 14 | 11.27% | 10.37% | 51.74% | 0.4543 | -35.68% | 0.8761 | 1.0000 | 13.0000 | 27.57% |
-| minimum_variance | daily_rebalance_to_target | 14 | 31.09% | 28.42% | 40.64% | 0.8186 | -29.59% | 1.3231 | 0.0840 | 16.2046 | 21.16% |
+| minimum_variance | daily_rebalance_to_target | 14 | 31.10% | 28.43% | 40.64% | 0.8187 | -29.59% | 1.3232 | 0.0840 | 16.2045 | 21.16% |
 | equal_weight | daily_rebalance_to_target | 14 | 8.54% | 7.87% | 51.76% | 0.4098 | -35.20% | 0.8202 | 0.0874 | 16.8166 | 27.40% |
 
 ## DM Test
 
 | Comparison | Policy | Cycle | Loss | Mean Loss Diff | DM Stat | p-value |
 |---|---|---:|---|---:|---:|---:|
-| minimum_variance_vs_equal_weight | enter_once_then_drift | 7 | squared_daily_return | -0.000119001 | -1.765 | 0.07762 |
-| minimum_variance_vs_equal_weight | daily_rebalance_to_target | 7 | squared_daily_return | -0.000120781 | -1.885 | 0.05937 |
-| minimum_variance_vs_equal_weight | enter_once_then_drift | 14 | squared_daily_return | -0.000281689 | -2.823 | 0.004758 |
-| minimum_variance_vs_equal_weight | daily_rebalance_to_target | 14 | squared_daily_return | -0.000280371 | -2.897 | 0.003771 |
+| minimum_variance_vs_equal_weight | enter_once_then_drift | 7 | squared_daily_return | -0.000118998 | -1.765 | 0.07763 |
+| minimum_variance_vs_equal_weight | daily_rebalance_to_target | 7 | squared_daily_return | -0.000120778 | -1.885 | 0.05938 |
+| minimum_variance_vs_equal_weight | enter_once_then_drift | 14 | squared_daily_return | -0.000281699 | -2.823 | 0.00476 |
+| minimum_variance_vs_equal_weight | daily_rebalance_to_target | 14 | squared_daily_return | -0.000280379 | -2.897 | 0.003773 |
 
 ## Interpretation
 

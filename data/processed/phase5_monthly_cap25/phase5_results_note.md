@@ -4,15 +4,16 @@
 
 - Rebalance frequency: monthly
 
-| Cycle | Rebalances | Active Mean | Active Min-Max | Top Weight Mean | Top Weight Max | Turnover Mean |
-|---:|---:|---:|---:|---:|---:|---:|
-| 7 | 13 | 14.15 | 8-20 | 0.2500 | 0.2500 | 0.6535 |
-| 14 | 13 | 14.15 | 8-20 | 0.2500 | 0.2500 | 0.6535 |
+| Cycle | Rebalances | Active Mean | Active Min-Max | Min Positive | Top Weight Mean | Top Weight Max | Turnover Mean |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 7 | 13 | 14.00 | 8-20 | 0.0028 | 0.2500 | 0.2500 | 0.6535 |
+| 14 | 13 | 14.00 | 8-20 | 0.0028 | 0.2500 | 0.2500 | 0.6535 |
 
 ## Interpretation
 
 - Phase 5 is a weight-generation step, not a completed investment product validation.
 - The strategy is better framed as a monthly virtual asset model portfolio after Phase 6 backtesting.
+- Positive weights at or below 0.10% are pruned to zero before artifacts are written.
 - A single-asset cap of 25% is active; top weights are mechanically bounded at that level.
 - This capped variant should be compared against the uncapped strategy and equal-weight in Phase 6.
 

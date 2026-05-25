@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>월간 가상자산 변동성 모델 포트폴리오</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CAPSTONE DASHBOARD</p>
+          <h1>월간 가상자산 변동성 모델 포트폴리오</h1>
+          <p class="subtitle">Minimum variance portfolio with 25% single-asset cap, monthly hold windows, and managed rebalance guidance.</p>
+        </div>
+        <div class="topbar__meta">
+          <span>KRW universe</span>
+          <span>Transaction costs ignored</span>
+          <span>Cap 25%</span>
+        </div>
+      </header>
+
+      <section class="control-strip" aria-label="Dashboard controls">
+        <div class="control-block control-block--date">
+          <label for="dateSlider">Demo date</label>
+          <div class="date-row">
+            <button id="playButton" class="icon-button" type="button" title="Play demo">▶</button>
+            <input id="dateSlider" type="range" min="0" max="0" value="0" />
+            <button id="monthJumpButton" class="icon-button" type="button" title="Jump to next rebalance">↦</button>
+          </div>
+          <div class="date-readout">
+            <strong id="selectedDate">-</strong>
+            <span id="windowStatus">Loading</span>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <label>Cycle</label>
+          <div class="segmented" role="group" aria-label="Cycle selector">
+            <button class="segment" data-cycle="7" type="button">7D</button>
+            <button class="segment" data-cycle="14" type="button">14D</button>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <label>Mode</label>
+          <div class="segmented" role="group" aria-label="Mode selector">
+            <button class="segment" data-policy="enter_once_then_drift" type="button">Simple</button>
+            <button class="segment" data-policy="daily_rebalance_to_target" type="button">Managed</button>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <label for="aumInput">AUM</label>
+          <div class="aum-input">
+            <span>₩</span>
+            <input id="aumInput" inputmode="numeric" value="100,000,000" />
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-grid" aria-label="Portfolio KPI">
+        <article class="metric">
+          <span>Total return</span>
+          <strong id="kpiTotalReturn">-</strong>
+          <small id="kpiTotalReturnHint">Current hold window</small>
+        </article>
+        <article class="metric">
+          <span>Sharpe</span>
+          <strong id="kpiSharpe">-</strong>
+          <small id="kpiSharpeHint">r_f = 0</small>
+        </article>
+        <article class="metric">
+          <span>Max drawdown</span>
+          <strong id="kpiMdd">-</strong>
+          <small id="kpiMddHint">Peak-to-trough</small>
+        </article>
+        <article class="metric">
+          <span>Ann. volatility</span>
+          <strong id="kpiVol">-</strong>
+          <small id="kpiRisk">Realized risk -</small>
+        </article>
+        <article class="metric">
+          <span>Active assets</span>
+          <strong id="kpiActive">-</strong>
+          <small id="kpiTop">Top weight -</small>
+        </article>
+      </section>
+
+      <section class="dashboard-main">
+        <section class="panel panel--performance">
+          <div class="panel-head">
+            <div>
+              <h2>Performance</h2>
+              <p>Current hold window through selected date</p>
+            </div>
+            <span id="performanceBadge" class="badge">14D Managed</span>
+          </div>
+          <div id="equityChart" class="chart chart--line" role="img" aria-label="Equity curve chart"></div>
+          <div class="legend">
+            <span><i class="legend-dot legend-dot--mv"></i>Minimum variance</span>
+            <span><i class="legend-dot legend-dot--ew"></i>Equal weight</span>
+            <span><i class="legend-dot legend-dot--btc"></i>BTC HODL</span>
+          </div>
+        </section>
+
+        <section class="panel panel--risk">
+          <div class="panel-head">
+            <div>
+              <h2>Risk</h2>
+              <p>Current hold window through selected date</p>
+            </div>
+          </div>
+          <div id="drawdownChart" class="chart chart--small" role="img" aria-label="Drawdown chart"></div>
+          <div class="risk-copy">
+            <strong>변동성 기반 운용</strong>
+            <span>Phase 4 covariance forecast와 jump volatility를 사용해 월초 target weight를 산출합니다.</span>
+          </div>
+        </section>
+
+        <section class="panel panel--monthly">
+          <div class="panel-head">
+            <div>
+              <h2>Monthly Hold-Window Return</h2>
+              <p>Prior completed monthly windows</p>
+            </div>
+          </div>
+          <div id="monthlyChart" class="chart chart--bar" role="img" aria-label="Monthly return chart"></div>
+        </section>
+
+        <aside class="side-stack" aria-label="Orders and portfolio">
+          <section class="panel panel--orders">
+            <div class="panel-head">
+              <div>
+                <h2>Orders</h2>
+                <p id="orderSummary">Target/current/delta weights</p>
+              </div>
+              <span id="orderBadge" class="badge">No order</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Side</th>
+                    <th>Current</th>
+                    <th>Target</th>
+                    <th>Delta</th>
+                    <th>Order amount</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel panel--portfolio">
+          <div class="panel-head">
+            <div>
+              <h2>Portfolio</h2>
+              <p id="portfolioWindow">Target composition</p>
+            </div>
+            <span id="capBadge" class="badge badge--ok">Cap OK</span>
+          </div>
+          <div id="holdingsList" class="holding-list"></div>
+        </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="data/dashboard_snapshots.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

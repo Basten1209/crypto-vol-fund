@@ -30,6 +30,7 @@ class MinimumVarianceParams:
     rebalance_frequency: str = "cycle"
     gross_exposure: float = config.MIN_VAR_C0
     single_asset_cap: float | None = config.SINGLE_ASSET_CAP
+    min_asset_weight: float = config.MIN_ASSET_WEIGHT
     psd_floor: float = config.PSD_FLOOR
     active_tol: float = 1e-6
     kkt_tol: float = 1e-8
@@ -42,12 +43,15 @@ class MinimumVarianceParams:
             "rebalance_frequency": self.rebalance_frequency,
             "gross_exposure": self.gross_exposure,
             "single_asset_cap": self.single_asset_cap,
+            "min_asset_weight": self.min_asset_weight,
             "psd_floor": self.psd_floor,
             "active_tol": self.active_tol,
             "kkt_tol": self.kkt_tol,
             "max_active_iter": self.max_active_iter,
             "max_projected_gradient_iter": self.max_projected_gradient_iter,
-            "method": "active_set_long_only_minimum_variance",
+            "method": "active_set_long_only_minimum_variance_with_min_weight_pruning"
+            if self.min_asset_weight > 0
+            else "active_set_long_only_minimum_variance",
         }
 
 
@@ -68,6 +72,7 @@ def solve_long_only_minimum_variance(
 
     q = _validate_covariance(covariance, params.psd_floor)
     cap = _resolve_single_asset_cap(params.single_asset_cap, q.shape[0])
+    _resolve_min_asset_weight(params.min_asset_weight, cap)
     if cap is not None:
         return _solve_capped_minimum_variance(q, cap, params)
 
@@ -131,6 +136,7 @@ def compute_phase5_portfolios(
     cycles: tuple[int, ...] | list[int] | None = None,
     limit_rebalances: int | None = None,
     single_asset_cap: float | None = None,
+    min_asset_weight: float | None = None,
     rebalance_frequency: str = "cycle",
 ) -> dict[str, Any]:
     """Run Phase 5 optimization and write cycle-specific artifacts."""
@@ -141,6 +147,7 @@ def compute_phase5_portfolios(
         cycles=tuple(config.CYCLES if cycles is None else cycles),
         rebalance_frequency=str(rebalance_frequency),
         single_asset_cap=config.SINGLE_ASSET_CAP if single_asset_cap is None else float(single_asset_cap),
+        min_asset_weight=config.MIN_ASSET_WEIGHT if min_asset_weight is None else float(min_asset_weight),
     )
     if params.rebalance_frequency not in {"cycle", "monthly"}:
         raise ValueError("rebalance_frequency must be one of: cycle, monthly")
@@ -235,6 +242,19 @@ def _resolve_single_asset_cap(cap: float | None, n_assets: int) -> float | None:
     if cap >= 1.0:
         return None
     return cap
+
+
+def _resolve_min_asset_weight(min_weight: float | None, cap: float | None) -> float:
+    if min_weight is None:
+        return 0.0
+    min_weight = float(min_weight)
+    if min_weight < 0:
+        raise ValueError("min_asset_weight must be non-negative")
+    if min_weight >= 1.0:
+        raise ValueError("min_asset_weight must be below 1")
+    if cap is not None and min_weight > cap + 1e-12:
+        raise ValueError("min_asset_weight cannot exceed single_asset_cap")
+    return min_weight
 
 
 def _solve_capped_minimum_variance(
@@ -393,6 +413,48 @@ def _project_capped_simplex(values: np.ndarray, cap: float) -> np.ndarray:
     return projected / total
 
 
+def _project_bounded_simplex(values: np.ndarray, lower: float, upper: float) -> np.ndarray:
+    values = np.asarray(values, dtype=np.float64)
+    if values.ndim != 1 or values.size == 0:
+        raise ValueError("values must be a non-empty 1D array")
+    if lower < 0 or upper <= 0 or lower > upper:
+        raise ValueError("Invalid bounded simplex limits")
+    n_values = len(values)
+    lower_sum = lower * n_values
+    upper_sum = upper * n_values
+    if lower_sum > 1.0 + 1e-12 or upper_sum < 1.0 - 1e-12:
+        raise ValueError("Bounded simplex is infeasible")
+    if abs(lower_sum - 1.0) <= 1e-12:
+        return np.full_like(values, lower)
+    if abs(upper_sum - 1.0) <= 1e-12:
+        return np.full_like(values, upper)
+
+    low = float(np.min(values - upper))
+    high = float(np.max(values - lower))
+    for _ in range(100):
+        mid = (low + high) / 2.0
+        projected = np.clip(values - mid, lower, upper)
+        if float(np.sum(projected)) > 1.0:
+            low = mid
+        else:
+            high = mid
+
+    projected = np.clip(values - high, lower, upper)
+    residual = 1.0 - float(np.sum(projected))
+    if abs(residual) > 1e-12:
+        if residual > 0:
+            room = upper - projected
+            recipients = room > 1e-12
+            if np.any(recipients):
+                projected[recipients] += residual * room[recipients] / float(np.sum(room[recipients]))
+        else:
+            room = projected - lower
+            recipients = room > 1e-12
+            if np.any(recipients):
+                projected[recipients] += residual * room[recipients] / float(np.sum(room[recipients]))
+    return projected
+
+
 def _projected_gradient_minimum_variance(q: np.ndarray, params: MinimumVarianceParams) -> dict[str, Any]:
     n_assets = q.shape[0]
     cap = _resolve_single_asset_cap(params.single_asset_cap, n_assets)
@@ -419,6 +481,95 @@ def _normalize_simplex(weights: np.ndarray) -> np.ndarray:
     if not np.isfinite(total) or total <= 0:
         return np.full_like(weights, 1.0 / len(weights))
     return weights / total
+
+
+def _enforce_min_asset_weight(
+    weights: np.ndarray,
+    params: MinimumVarianceParams,
+    cap: float | None,
+) -> np.ndarray:
+    min_weight = _resolve_min_asset_weight(params.min_asset_weight, cap)
+    if min_weight <= 0:
+        return weights
+
+    weights = np.asarray(weights, dtype=np.float64)
+    n_assets = len(weights)
+    upper = cap if cap is not None else 1.0
+    positive_floor = float(np.nextafter(min_weight, np.inf))
+    order = np.argsort(weights)[::-1]
+    active = weights > min_weight
+    if not np.any(active):
+        active[order[0]] = True
+
+    min_active_count = 1 if cap is None else int(np.ceil((1.0 - 1e-12) / cap))
+    for candidate in order:
+        if int(np.sum(active)) >= min_active_count:
+            break
+        active[int(candidate)] = True
+
+    while float(np.sum(active)) * positive_floor > 1.0 + 1e-12:
+        removable = [int(idx) for idx in order[::-1] if active[int(idx)]]
+        removed = False
+        for candidate in removable:
+            next_count = int(np.sum(active)) - 1
+            if next_count < min_active_count:
+                continue
+            if cap is not None and next_count * cap < 1.0 - 1e-12:
+                continue
+            active[candidate] = False
+            removed = True
+            break
+        if not removed:
+            raise ValueError("min_asset_weight is infeasible with the selected active set")
+
+    while cap is not None and float(np.sum(active)) * cap < 1.0 - 1e-12:
+        added = False
+        for candidate in order:
+            candidate = int(candidate)
+            if not active[candidate]:
+                active[candidate] = True
+                added = True
+                break
+        if not added:
+            raise ValueError("single_asset_cap is infeasible after min-weight pruning")
+
+    active_idx = np.where(active)[0]
+    projected_active = _project_bounded_simplex(
+        values=weights[active_idx],
+        lower=positive_floor,
+        upper=upper,
+    )
+    pruned = np.zeros(n_assets, dtype=np.float64)
+    pruned[active_idx] = projected_active
+    total = float(np.sum(pruned))
+    if not np.isfinite(total) or total <= 0:
+        raise ValueError("min-weight pruning produced invalid weights")
+    if abs(total - 1.0) > 1e-10:
+        pruned[active_idx] = _project_bounded_simplex(
+            values=pruned[active_idx],
+            lower=positive_floor,
+            upper=upper,
+        )
+    return pruned
+
+
+def _min_positive_weight(weights: np.ndarray) -> float:
+    weights = np.asarray(weights, dtype=np.float64)
+    positive = weights[weights > 0.0]
+    if positive.size == 0:
+        return 0.0
+    return float(np.min(positive))
+
+
+def _min_asset_weight_violation(weights: np.ndarray, params: MinimumVarianceParams) -> float:
+    cap = _resolve_single_asset_cap(params.single_asset_cap, len(weights))
+    min_weight = _resolve_min_asset_weight(params.min_asset_weight, cap)
+    if min_weight <= 0:
+        return 0.0
+    min_positive = _min_positive_weight(weights)
+    if min_positive <= 0:
+        return float("inf")
+    return float(max(0.0, min_weight - min_positive))
 
 
 def _kkt_violation(q: np.ndarray, weights: np.ndarray, params: MinimumVarianceParams) -> float:
@@ -455,6 +606,7 @@ def _solution_result(
 ) -> dict[str, Any]:
     cap = _resolve_single_asset_cap(params.single_asset_cap, len(weights))
     weights = _project_capped_simplex(weights, cap) if cap is not None else _normalize_simplex(weights)
+    weights = _enforce_min_asset_weight(weights, params, cap)
     eigvals = np.linalg.eigvalsh((q + q.T) / 2.0)
     min_eig = float(np.min(eigvals))
     max_eig = float(np.max(eigvals))
@@ -467,8 +619,10 @@ def _solution_result(
         "kkt_violation": _kkt_violation(q, weights, params),
         "weight_sum_error": float(abs(np.sum(weights) - 1.0)),
         "min_weight": float(np.min(weights)),
+        "min_positive_weight": _min_positive_weight(weights),
         "max_weight": float(np.max(weights)),
         "single_asset_cap_violation": float(max(0.0, np.max(weights) - cap)) if cap is not None else 0.0,
+        "min_asset_weight_violation": _min_asset_weight_violation(weights, params),
         "active_count": int(np.sum(weights > params.active_tol)),
         "condition_number": float(condition_number),
         "min_eig_objective": min_eig,
@@ -589,6 +743,7 @@ def _optimize_cycle(
                 "top_weight": float(weight[top_idx]),
                 "max_weight": float(solved["max_weight"]),
                 "min_weight": float(solved["min_weight"]),
+                "min_positive_weight": float(solved["min_positive_weight"]),
                 "objective_variance": float(solved["objective_variance"]),
                 "condition_number_objective": float(solved["condition_number"]),
                 "min_eig_objective": float(solved["min_eig_objective"]),
@@ -599,6 +754,7 @@ def _optimize_cycle(
                 "kkt_violation": float(solved["kkt_violation"]),
                 "weight_sum_error": float(solved["weight_sum_error"]),
                 "single_asset_cap_violation": float(solved["single_asset_cap_violation"]),
+                "min_asset_weight_violation": float(solved["min_asset_weight_violation"]),
             }
         )
 
@@ -716,6 +872,8 @@ def _cycle_summary(summary_df: pd.DataFrame) -> dict[str, Any]:
         "weight_sum_error_max": float(summary_df["weight_sum_error"].max()),
         "single_asset_cap_violation_max": float(summary_df["single_asset_cap_violation"].max()),
         "min_weight_min": float(summary_df["min_weight"].min()),
+        "min_positive_weight_min": float(summary_df["min_positive_weight"].min()),
+        "min_asset_weight_violation_max": float(summary_df["min_asset_weight_violation"].max()),
         "solver_status_counts": {str(k): int(v) for k, v in status_counts.items()},
     }
 
@@ -723,6 +881,7 @@ def _cycle_summary(summary_df: pd.DataFrame) -> dict[str, Any]:
 def _product_interpretation(
     cycle_summary: dict[str, dict[str, Any]],
     single_asset_cap: float | None,
+    min_asset_weight: float,
 ) -> dict[str, Any]:
     top_weight_max = max(summary["top_weight_max"] for summary in cycle_summary.values())
     top_weight_mean_max = max(summary["top_weight_mean"] for summary in cycle_summary.values())
@@ -763,6 +922,15 @@ def _product_interpretation(
             "note": concentration_note,
         },
         "candidate_next_steps": next_steps,
+        "minimum_position_size": {
+            "min_asset_weight": float(min_asset_weight),
+            "note": (
+                f"Positive portfolio weights are pruned/projected to stay at or above {min_asset_weight:.3%}; "
+                "smaller numerical positions are set to zero."
+            )
+            if min_asset_weight > 0
+            else "No minimum positive position size is applied.",
+        },
     }
 
 
@@ -805,7 +973,7 @@ def _write_outputs(
     np.savez_compressed(npz_path, **npz_payload)
 
     cycle_summary = {str(cycle): _cycle_summary(result["summary"]) for cycle, result in cycle_results.items()}
-    product_interpretation = _product_interpretation(cycle_summary, params.single_asset_cap)
+    product_interpretation = _product_interpretation(cycle_summary, params.single_asset_cap, params.min_asset_weight)
     report = {
         "forecast_path": repo_relative_path(forecast_path, ROOT),
         "prvm_path": repo_relative_path(prvm_path, ROOT),
@@ -820,6 +988,10 @@ def _write_outputs(
             "all_weight_sums_close_to_one": bool(summary_df["weight_sum_error"].max() <= 1e-10),
             "all_weights_long_only": bool(summary_df["min_weight"].min() >= -1e-12),
             "all_weights_within_single_asset_cap": bool(summary_df["single_asset_cap_violation"].max() <= 1e-10),
+            "all_positive_weights_at_or_above_min_asset_weight": bool(
+                summary_df["min_asset_weight_violation"].max() <= 1e-12
+            ),
+            "min_positive_weight": float(summary_df["min_positive_weight"].min()),
             "max_kkt_violation": float(summary_df["kkt_violation"].max()),
         },
         "interpretation_note": (
@@ -845,6 +1017,7 @@ def _write_phase5_markdown_report(path: Path, report: dict[str, Any]) -> None:
     cycle_14 = report["cycle_summary"].get("14", {})
     interp = report["product_interpretation"]
     single_asset_cap = report["params"]["single_asset_cap"]
+    min_asset_weight = report["params"]["min_asset_weight"]
     if single_asset_cap is None:
         concentration_lines = [
             "- Concentration risk is material: top weights can exceed 90% in the unconstrained long-only setup.",
@@ -862,8 +1035,8 @@ def _write_phase5_markdown_report(path: Path, report: dict[str, Any]) -> None:
         "",
         f"- Rebalance frequency: {report['params']['rebalance_frequency']}",
         "",
-        "| Cycle | Rebalances | Active Mean | Active Min-Max | Top Weight Mean | Top Weight Max | Turnover Mean |",
-        "|---:|---:|---:|---:|---:|---:|---:|",
+        "| Cycle | Rebalances | Active Mean | Active Min-Max | Min Positive | Top Weight Mean | Top Weight Max | Turnover Mean |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|",
         _phase5_cycle_markdown_row(7, cycle_7),
         _phase5_cycle_markdown_row(14, cycle_14),
         "",
@@ -872,6 +1045,10 @@ def _write_phase5_markdown_report(path: Path, report: dict[str, Any]) -> None:
         "- Phase 5 is a weight-generation step, not a completed investment product validation.",
         "- The strategy is better framed as a monthly virtual asset model portfolio after Phase 6 backtesting.",
     ]
+    if min_asset_weight > 0:
+        lines.append(
+            f"- Positive weights at or below {min_asset_weight:.2%} are pruned to zero before artifacts are written."
+        )
     lines.extend(concentration_lines)
     lines.extend([
         "",
@@ -885,10 +1062,11 @@ def _write_phase5_markdown_report(path: Path, report: dict[str, Any]) -> None:
 
 def _phase5_cycle_markdown_row(cycle: int, summary: dict[str, Any]) -> str:
     if not summary:
-        return f"| {cycle} | n/a | n/a | n/a | n/a | n/a | n/a |"
+        return f"| {cycle} | n/a | n/a | n/a | n/a | n/a | n/a | n/a |"
     active_range = f"{summary['active_count_min']}-{summary['active_count_max']}"
     return (
         f"| {cycle} | {summary['n_rebalances']} | {summary['active_count_mean']:.2f} | "
-        f"{active_range} | {summary['top_weight_mean']:.4f} | {summary['top_weight_max']:.4f} | "
+        f"{active_range} | {summary['min_positive_weight_min']:.4f} | "
+        f"{summary['top_weight_mean']:.4f} | {summary['top_weight_max']:.4f} | "
         f"{summary['turnover_mean']:.4f} |"
     )

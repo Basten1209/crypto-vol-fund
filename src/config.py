@@ -34,6 +34,7 @@ EWMA_INIT_DAYS    = 28               # 초기값 계산용 일수
 # === Portfolio ===
 MIN_VAR_C0        = 1                 # gross exposure (long-only)
 SINGLE_ASSET_CAP  = None             # 단일종목 cap (없음, Phase 6 후 재검토)
+MIN_ASSET_WEIGHT  = 0.001            # 최소 편입 비중 (0.1% 이하 후보는 0으로 pruning)
 
 # === Backtest ===
 CYCLES            = [7, 14]           # 1주, 2주 동시 운용

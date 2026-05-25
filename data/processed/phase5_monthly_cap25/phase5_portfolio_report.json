@@ -10,12 +10,13 @@
     "rebalance_frequency": "monthly",
     "gross_exposure": 1,
     "single_asset_cap": 0.25,
+    "min_asset_weight": 0.001,
     "psd_floor": 1e-10,
     "active_tol": 1e-06,
     "kkt_tol": 1e-08,
     "max_active_iter": 500,
     "max_projected_gradient_iter": 20000,
-    "method": "active_set_long_only_minimum_variance"
+    "method": "active_set_long_only_minimum_variance_with_min_weight_pruning"
   },
   "limit_rebalances": null,
   "n_assets": 50,
@@ -25,16 +26,18 @@
       "n_rebalances": 13,
       "first_rebalance_date": "2025-03-01",
       "last_rebalance_date": "2026-03-01",
-      "active_count_mean": 14.153846153846153,
+      "active_count_mean": 14.0,
       "active_count_min": 8,
       "active_count_max": 20,
       "top_weight_mean": 0.25,
       "top_weight_max": 0.25,
-      "turnover_mean": 0.6535088257959104,
-      "kkt_violation_max": 4.336808689942018e-19,
-      "weight_sum_error_max": 0.0,
+      "turnover_mean": 0.6534758129648562,
+      "kkt_violation_max": 5.765129321535546e-06,
+      "weight_sum_error_max": 4.440892098500626e-16,
       "single_asset_cap_violation_max": 0.0,
-      "min_weight_min": 5.782411586588042e-19,
+      "min_weight_min": 0.0,
+      "min_positive_weight_min": 0.002831798990035504,
+      "min_asset_weight_violation_max": 0.0,
       "solver_status_counts": {
         "optimal_capped_active_set": 13
       }
@@ -43,16 +46,18 @@
       "n_rebalances": 13,
       "first_rebalance_date": "2025-03-01",
       "last_rebalance_date": "2026-03-01",
-      "active_count_mean": 14.153846153846153,
+      "active_count_mean": 14.0,
       "active_count_min": 8,
       "active_count_max": 20,
       "top_weight_mean": 0.25,
       "top_weight_max": 0.25,
-      "turnover_mean": 0.6535088257959104,
-      "kkt_violation_max": 4.336808689942018e-19,
-      "weight_sum_error_max": 0.0,
+      "turnover_mean": 0.6534758129648562,
+      "kkt_violation_max": 5.765129321535546e-06,
+      "weight_sum_error_max": 4.440892098500626e-16,
       "single_asset_cap_violation_max": 0.0,
-      "min_weight_min": 5.782411586588042e-19,
+      "min_weight_min": 0.0,
+      "min_positive_weight_min": 0.002831798990035504,
+      "min_asset_weight_violation_max": 0.0,
       "solver_status_counts": {
         "optimal_capped_active_set": 13
       }
@@ -73,13 +78,19 @@
       "Compare capped versus uncapped minimum variance on return, volatility, drawdown, and turnover.",
       "Use BTC HODL as market context rather than the primary benchmark.",
       "Use research wording such as monthly virtual asset model portfolio rather than public fund wording."
-    ]
+    ],
+    "minimum_position_size": {
+      "min_asset_weight": 0.001,
+      "note": "Positive portfolio weights are pruned/projected to stay at or above 0.100%; smaller numerical positions are set to zero."
+    }
   },
   "sanity": {
     "all_weight_sums_close_to_one": true,
     "all_weights_long_only": true,
     "all_weights_within_single_asset_cap": true,
-    "max_kkt_violation": 4.336808689942018e-19
+    "all_positive_weights_at_or_above_min_asset_weight": true,
+    "min_positive_weight": 0.002831798990035504,
+    "max_kkt_violation": 5.765129321535546e-06
   },
   "interpretation_note": "Scheduled weights repeat each rebalance weight across its hold window for date alignment. They are not drifted realized portfolio weights; Phase 6 should compute hold-period drift from returns.",
   "outputs": {
