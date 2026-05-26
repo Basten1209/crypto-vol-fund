@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>변동성 기반 디지털자산 공모펀드 — 규제 현황 & 액션플랜</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:#f2f2f2;padding:40px 0;display:flex;flex-direction:column;align-items:center;gap:40px}
+.slide{width:960px;background:#fff;padding:52px 56px 48px;box-shadow:0 2px 16px rgba(0,0,0,.09)}
+.slide-num{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#bbb;margin-bottom:8px}
+.slide-title{font-size:24px;font-weight:700;color:#111;line-height:1.25;margin-bottom:4px}
+.slide-sub{font-size:12.5px;color:#888;margin-bottom:22px}
+.rule{height:2.5px;background:#111;margin-bottom:28px}
+
+/* ══════════════════════════════
+   SLIDE 1
+══════════════════════════════ */
+.s1-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.s1-table th{
+  font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;background:#111;padding:11px 14px;
+  text-align:center;vertical-align:middle;
+}
+.s1-table tbody tr{height:90px;border-bottom:1px solid #ececec}
+
+.s1-table tbody td{
+  padding:12px 14px;font-size:12.5px;color:#111;
+  background:#fff;
+  vertical-align:middle;line-height:1.65;text-align:left;overflow:hidden;
+}
+.s1-table tbody td:nth-child(1){
+  font-weight:600;font-size:12px;color:#111;
+  text-align:center;vertical-align:middle;line-height:1.5;word-break:keep-all;
+}
+.s1-table tbody td:nth-child(2){
+  text-align:center;font-weight:700;font-size:11px;
+  letter-spacing:.04em;vertical-align:middle;padding:0;
+}
+.td-on   {background:#fff;color:#111}
+.td-done {background:#fff;color:#111}
+.td-act  {background:#fff;color:#111}
+.td-go  {background:#fff;color:#111}
+.td-warn{background:#fff;color:#111}
+.td-no  {background:#fff;color:#111}
+.law-sub{font-size:11px;color:#aaa;font-weight:400;display:block;margin-top:3px}
+.key-point{font-weight:600;color:#111}
+
+/* ══════════════════════════════
+   SLIDE 2
+══════════════════════════════ */
+.g-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.g-table thead th{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;background:#111;padding:10px 6px;
+  text-align:center;vertical-align:middle;
+}
+.g-table thead th.lh{text-align:center;padding-left:10px}
+
+.cat-row td{
+  padding:10px 14px;background:#111;color:#fff;
+  font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+}
+.cat-row td span{font-weight:400;font-size:11px;opacity:.6;margin-left:10px}
+
+/* 1: 행 높이 축소 */
+.item-row{height:52px}
+.item-row td{border-bottom:1px solid #ececec;padding:0}
+
+.item-label{
+  padding:10px 14px;
+  font-size:12px;font-weight:500;color:#111;line-height:1.4;
+  vertical-align:middle;text-align:center;word-break:keep-all;
+}
+.item-sub{font-size:10px;color:#999;font-weight:400;display:block;margin-top:2px}
+
+/* 색상 칸 — 텍스트 포함 */
+.g-table tbody td.cp{
+  padding:0 3px;
+  vertical-align:middle;text-align:center;
+  font-size:11px;font-weight:700;line-height:1.3;
+  letter-spacing:.01em;
+}
+.c-black{background:#111;color:#fff}
+.c-gray {background:#888;color:#fff}
+.c-lgray{background:#d4d4d4;color:#444}
+.c-white{background:#fff;color:transparent} /* 빈 칸 — 텍스트 없음 */
+
+/* 마일스톤 */
+
+
+.ms{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:700;
+  border-radius:2px;white-space:normal;text-align:center;line-height:1.5;
+  width:100%;height:54px;
+}
+.ms-black{background:#111;color:#fff}
+.ms-gray{background:#f0f0f0;color:#555;border:1px solid #ccc}
+
+/* 하단 박스 */
+.box-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:28px;align-items:stretch}
+.box{border:1.5px solid #111;padding:16px 18px;border-radius:3px;display:flex;flex-direction:column}
+.box-title{font-size:11.5px;font-weight:700;color:#111;text-align:center;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid #e0e0e0;letter-spacing:.04em;flex-shrink:0}
+.box-item{font-size:11.5px;color:#444;line-height:1.8;padding-left:12px;position:relative;margin-bottom:2px}
+.box-item::before{content:'·';position:absolute;left:2px;color:#111;font-weight:700}
+
+@media print{
+  body{background:#fff;padding:0}
+  .slide{box-shadow:none;page-break-after:always}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ SLIDE 1 ══════════ -->
+<div class="slide">
+  <div class="slide-num">01 · 규제 환경 현황</div>
+  <div class="slide-title">가상자산 관련 법률·제도 현황 분석</div>
+  <div class="slide-sub">2026년 5월 24일 기준 &nbsp;·&nbsp; B2B 인프라 라이선싱 모델 관점 (No Custody / B2B Only)</div>
+  <div class="rule"></div>
+  <table class="s1-table">
+    <colgroup><col style="width:17%"><col style="width:10%"><col style="width:27%"><col style="width:24%"><col style="width:22%"></colgroup>
+    <thead>
+      <tr>
+        <th>법률 / 제도</th><th>상태</th><th>핵심 현황</th><th>변화 방향</th><th>우리 프로젝트 관련성</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>금융규제 샌드박스<span class="law-sub">혁신금융지원 특별법</span></td>
+        <td class="td-on">운영 중</td>
+        <td>2019년 도입. 500건 이상 지정, 200건 이상 출시(~2024.12). 분기별 정기신청. 규제 특례 최대 4년(2+2).</td>
+        <td>2025~26년 가상자산·RWA·토큰증권 분야 신청 활성화 전망</td>
+        <td class="key-point">가장 빠른 시장 진입 경로. B2B 인프라 서비스로 신청 가능.</td>
+      </tr>
+      <tr>
+        <td>투자자문업 경계<span class="law-sub">자본시장법</span></td>
+        <td class="td-warn">주의</td>
+        <td>현재 가상자산은 자본시장법 금융투자상품 아님. B2B 알고리즘 신호는 현재 투자자문업 해당 불가.</td>
+        <td>디지털자산기본법 통과 시 규제 범위 확대 가능성. 통과 후 재검토 필수.</td>
+        <td class="key-point">현재는 안전. 기본법 통과 후 계약 구조 재설계 필요.</td>
+      </tr>
+      <tr>
+        <td>디지털자산기본법<span class="law-sub">2단계 입법</span></td>
+        <td class="td-go">심사 중</td>
+        <td>2025.6 발의. 5개 경쟁 법안. 스테이블코인·거래소 지배구조 등 핵심 쟁점 미합의. 정무위 심사 중.</td>
+        <td>6.3 지방선거 후 입법 공백 가능성. 시행 2027~2028년 예상.</td>
+        <td class="key-point">통과 전까지 직접 규제 없음. 통과 후 즉시 검토.</td>
+      </tr>
+      <tr>
+        <td>가상자산 현물 ETF<span class="law-sub">공모펀드 허용</span></td>
+        <td class="td-no">불허 추진</td>
+        <td>현행 자본시장법상 불인정. 2026 경제성장전략에 도입 명시. 법인 2단계 실명계좌 허용도 지연 중.</td>
+        <td>선결 과제 多. 현실적 허용 시점 2027~2028년 이후 예상.</td>
+        <td class="key-point">허용 시점 = 클라이언트 수요 폭발. 우리 BM의 핵심 전제 조건.</td>
+      </tr>
+      <tr>
+        <td>STO 전자증권법<span class="law-sub">자본시장법 개정</span></td>
+        <td class="td-done">통과 완료</td>
+        <td>2026.1.15 본회의 통과. 토큰증권 발행·유통 허용. 2026.2 토큰증권 협의체 발족.</td>
+        <td>공포 후 1년 경과 시 시행 → <strong>2027년 1월 잠정 시행.</strong></td>
+        <td class="key-point">2027.1 시행이 우리 첫 공식 수요 발생 시점.</td>
+      </tr>
+      <tr>
+        <td>가상자산 이용자 보호법<span class="law-sub">1단계 입법</span></td>
+        <td class="td-act">시행 중</td>
+        <td>2024.7.19 시행. 예치금·자산 분리보관 의무. 현재 27개 VASP 신고. 신규 진입 제한적.</td>
+        <td>2단계 입법과 연계 고도화 예정. 기관 수탁·OTC 전문 사업자 진입 가능.</td>
+        <td class="key-point">우리는 VASP 아님. 클라이언트 환경 이해용.</td>
+      </tr>
+      <tr>
+        <td>특금법<span class="law-sub">특정금융거래정보법</span></td>
+        <td class="td-act">시행 중</td>
+        <td>2021.3 시행. VASP 신고제·AML/KYC 의무. 3년 갱신. 업비트 2025.12 첫 갱신 수리.</td>
+        <td>디지털자산기본법 통과 후 역할 재조정 가능성.</td>
+        <td class="key-point">자산 미보관·직접거래 없음 = VASP 해당 없음. 직접 적용 불가.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════ SLIDE 2 ══════════ -->
+<div class="slide">
+  <div class="slide-num">02 · 액션플랜</div>
+  <div class="slide-title">시장 진입 액션플랜</div>
+  <div class="slide-sub">규제 마일스톤 기반 타임라인 &nbsp;·&nbsp; B2B 인프라 라이선싱 모델</div>
+  <div class="rule"></div>
+
+  <table class="g-table">
+    <colgroup>
+      <col style="width:25%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="lh">Action Plan</th>
+        <th>2026 H1</th><th>2026 H2</th><th>2027 H1</th><th>2027 H2</th><th>2028~</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr class="cat-row">
+        <td colspan="6">1. 시스템 완성 및 시장 진입 준비<span>Phase 1</span></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">백테스팅 완료 및 성과 검증<span class="item-sub">PRVM → EWMA → GMV · 성과 리포트</span></td>
+        <td class="cp c-black">실행</td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">IP 보호 및 법적 구조 설계<span class="item-sub">영업비밀 등록 · B2B 표준계약서 · 면책 조항</span></td>
+        <td class="cp c-black">실행</td>
+        <td class="cp c-lgray">유지</td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">금융규제 샌드박스 신청<span class="item-sub">컨설팅 신청 → 정기신청 → 혁신금융심사위원회</span></td>
+        <td class="cp c-lgray">준비</td>
+        <td class="cp c-black">신청</td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">크립토 헤지펀드 파이프라인 구축<span class="item-sub">데모 제공 · LOI 확보 · PoC 영업</span></td>
+        <td class="cp c-lgray">준비</td>
+        <td class="cp c-black">구축</td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+      </tr>
+
+      <tr class="cat-row">
+        <td colspan="6">2. 규제 환경 대응 및 파일럿 계약<span>Phase 2</span></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">샌드박스 지정 완료 및 서비스 출시<span class="item-sub">규제 특례 하 B2B API 출시 · 구독료 과금</span></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-lgray">심사 중</td>
+        <td class="cp c-black">출시</td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">디지털자산기본법 대응<span class="item-sub">통과 시 규제 포함 여부 확인 · 계약 구조 재검토</span></td>
+        <td class="cp c-lgray">모니터링</td>
+        <td class="cp c-lgray">모니터링</td>
+        <td class="cp c-gray">대응</td>
+        <td class="cp c-lgray">후속 검토</td>
+        <td class="cp c-white"></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">STO법 시행 대비 자산운용사 선제 영업<span class="item-sub">토큰화 펀드 수요 선점 · 파일럿 계약 체결</span></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-lgray">준비</td>
+        <td class="cp c-black">영업</td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+      </tr>
+
+      <tr class="cat-row">
+        <td colspan="6">3. STO 시장 연계 및 ETF 시대 대비<span>Phase 3</span></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">첫 공식 클라이언트 계약 및 수익화<span class="item-sub">구독료 + AUM 비례 수수료 구조 적용</span></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-black">계약</td>
+        <td class="cp c-black">수익화</td>
+        <td class="cp c-white"></td>
+      </tr>
+      <tr class="item-row">
+        <td class="item-label">법인 투자·현물 ETF 허용 대비 확장<span class="item-sub">대형 자산운용사 공략 · 글로벌 GTM 전략사 확대</span></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-white"></td>
+        <td class="cp c-lgray">준비</td>
+        <td class="cp c-black">공략</td>
+        <td class="cp c-black">확장</td>
+      </tr>
+
+      <tr class="item-row" style="font-size:10px">
+        <td class="item-label" style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#111">규제 마일스톤</td>
+        <td class="cp c-lgray">정무위 심사 · 디지털자산법</td>
+        <td class="cp c-black">샌드박스 신청</td>
+        <td class="cp c-black">STO법 2027.1 시행</td>
+        <td class="cp c-lgray">법인 ETF 허용 예상</td>
+        <td class="cp c-lgray">디지털자산법 시행 예상</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <div class="box-row">
+    <div class="box">
+      <div class="box-title">규제 리스크 관점</div>
+      <div class="box-item">자산 미보관 + B2B → VASP 해당 없음</div>
+      <div class="box-item">가상자산 ≠ 자본시장법 금융투자상품 → 투자자문업 현재 회피 가능</div>
+      <div class="box-item">샌드박스 통해 추가 규제 특례 확보</div>
+    </div>
+    <div class="box">
+      <div class="box-title">수요 발생 타이밍</div>
+      <div class="box-item">단기: 크립토 헤지펀드·GTM 전략사 (현재)</div>
+      <div class="box-item">중기: STO법 시행 후 자산운용사 (2027.1~)</div>
+      <div class="box-item">장기: 법인 ETF 허용 후 대형 기관 (2027~28)</div>
+    </div>
+    <div class="box">
+      <div class="box-title">최우선 액션 아이템</div>
+      <div class="box-item">백테스팅 완성 → 성과 리포트 작성</div>
+      <div class="box-item">금융규제 샌드박스 컨설팅 즉시 신청</div>
+      <div class="box-item">STO법 시행 전 자산운용사 선제 영업</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
