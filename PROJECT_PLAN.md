@@ -193,7 +193,7 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 
 ### Benchmark
 1. **BTC HODL**: 2025-03-01에 BTC 100% 매수 후 EOP까지 보유
-2. **Equal-weight (EW)**: GMV와 동일한 50종목, 동일 cycle/리밸런싱 규칙
+2. **Equal-weight (EW)**: minimum variance portfolio와 동일한 50종목, 동일 cycle/리밸런싱 규칙
 
 ### 통계적 검정
 - **Diebold-Mariano test**: forecast loss differential. 1주 cycle (n≈52) 결과로 검정력 확보.
@@ -201,7 +201,7 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 ### Sanity check 자동화
 - PRVM_d trace 시계열 (총 분산 spike 검출)
 - Σ̂ EWMA의 condition number / top-k eigenvalue 시계열
-- GMV ω의 max(|ω|) 시계열 → 단일종목 cap 도입 여부 판단 근거
+- Minimum variance portfolio ω의 max(|ω|) 시계열 → 단일종목 cap 도입 여부 판단 근거
 
 ### 산출물
 - Equity curve (cycle별)
@@ -226,7 +226,7 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 | 거래비용 | 무시 |
 | Cycle | 1주 + 2주 동시 |
 | EWMA λ | 0.94 (고정) |
-| GMV 제약 | c_0 = 1 (long-only) |
+| Minimum variance 제약 | c_0 = 1 (long-only) |
 | 단일종목 cap | 없음 (재고 가능) |
 | Benchmark | BTC HODL + Equal-weight |
 | 연환산 | √365 |
@@ -262,7 +262,7 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 ### Jump truncation
 - Mancini, C. (2009)
 
-### Long-only GMV sparsity
+### Long-only minimum variance sparsity
 - Jagannathan, R., & Ma, T. (2003), *Risk Reduction in Large Portfolios: Why Imposing the Wrong Constraints Helps*
 
 ### 평가 메트릭
