@@ -32,6 +32,7 @@
 │   │
 │   ├── phase2_eda/             # EDA — @iron-4842
 │   │   ├── distribution_eda.py
+│   │   ├── summary_stats.py
 │   │   ├── prvm_signature_plot.py
 │   │   ├── noise_signal_estimator.py
 │   │   └── jump_activity_eda.py
@@ -44,7 +45,7 @@
 │   │   ├── matrix_ewma.py
 │   │   └── forecast_evaluator.py
 │   │
-│   ├── phase5_portfolio/       # GMV 최적화 — @basten1209
+│   ├── phase5_portfolio/       # Minimum variance 최적화 — @basten1209
 │   │   └── lo_mvp_optimizer.py
 │   │
 │   └── phase6_backtest/        # 백테스팅 / 평가 — @basten1209 (해석 보조 @iron-4842)
@@ -90,7 +91,7 @@ WINDOW            = 28             # EWMA 초기값 산출 기간
 EWMA_INIT_DAYS    = 28             # 초기값 sample mean 일수
 
 # === Portfolio ===
-GMV_C0            = 1              # gross exposure (long-only)
+MIN_VAR_C0        = 1              # gross exposure (long-only)
 SINGLE_ASSET_CAP  = None           # 결과 보고 재검토
 
 # === Backtest ===
@@ -163,7 +164,7 @@ A: QLIKE 계산 시 log det(Σ) 필요. eigenvalue가 0이면 −∞ → numeric
 A: RiskMetrics 표준. 첫 28일 PRVM 평균으로 초기화한 뒤 recursive EWMA로 매일 갱신한다. Effective sample length는 약 16.7일이다.
 
 **Q: 왜 stablecoin 제외?**
-A: USDT 등은 KRW 변동성이 BTC 대비 1/20 수준 → GMV가 stablecoin에 50%+ 몰아주어 "변동성 기반 펀드" 콘셉트 훼손.
+A: USDT 등은 KRW 변동성이 BTC 대비 1/20 수준 → minimum variance portfolio가 stablecoin에 50%+ 몰아주어 "변동성 기반 펀드" 콘셉트 훼손.
 
 **Q: 단일종목 cap 없는 이유?**
 A: 논문(Shin et al. 2025) 일관. Phase 6 결과 (max weight 분포)를 보고 재검토.
@@ -177,14 +178,14 @@ A: 24/7 거래라 영업일 개념 없음.
 **Q: 거래비용은?**
 A: 무시 (펀드 컨셉 시연 단계).
 
-**Q: GMV가 50개 모두에 투자하는가?**
+**Q: Minimum variance portfolio가 50개 모두에 투자하는가?**
 A: 아니다. Long-only 제약 + 암호화폐의 높은 cross-correlation 때문에 자연스럽게 sparse해진다 (보통 active asset 5~15개). Jagannathan & Ma (2003) 참조.
 
 **Q: 포트폴리오 최적화에 들어가는 Σ는?**
 A: EWMA forecast (jump-adjusted PRVM 기반) + 직전일 jump volatility (JV_{d-1}). 논문 그대로.
 
 **Q: cycle별 forecast는 매번 새로 계산하는가?**
-A: EWMA recursion은 매일 update, forecast Σ̂는 매일 산출. 단, GMV weight ω는 cycle 시작일에만 산출하고 hold 기간 내 고정 (리밸런싱 없음).
+A: EWMA recursion은 매일 update, forecast Σ̂는 매일 산출. 단, minimum variance portfolio weight ω는 cycle 시작일에만 산출하고 hold 기간 내 고정 (리밸런싱 없음).
 
 ---
 
@@ -221,7 +222,7 @@ A: EWMA recursion은 매일 update, forecast Σ̂는 매일 산출. 단, GMV wei
 | 메인 (FIVAR / PRVM / portfolio) | Shin, Kim, Wang & Fan (2025) — `docs/references/FIVAR_Revision.pdf` |
 | Pre-averaging | Jacod et al. (2009), Christensen et al. (2010), Aït-Sahalia & Xiu (2016) |
 | Jump truncation | Mancini (2009) |
-| Long-only GMV sparsity | Jagannathan & Ma (2003) |
+| Long-only minimum variance sparsity | Jagannathan & Ma (2003) |
 | 평가 메트릭 | Patton (2011), Hansen & Lunde (2006a) |
 | Forecast 비교 검정 | Diebold & Mariano (1995) |
 | EWMA | RiskMetrics Technical Document (1996) |

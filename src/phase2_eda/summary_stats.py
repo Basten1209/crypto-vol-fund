@@ -1,7 +1,8 @@
 """
 Phase 2 EDA - 50개 종목 요약 통계
 - ticker별: 일평균 거래 횟수, log-return 통계 (일/연환산), kurtosis
-- 산출물: docs/phase2_eda/summary_stats.csv + summary_stats.html
+- rolling 변동성 시계열 (대표 종목, window=28일)
+- 산출물: data/processed/phase2/summary_stats.csv + docs/phase2_eda/summary_stats.html
 """
 import sys
 import os
@@ -140,16 +141,58 @@ def plot_summary_interactive(summary_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def generate_report(summary_df: pd.DataFrame, fig: go.Figure):
+def plot_rolling_volatility(prices: pd.DataFrame, trading_day: pd.Series,
+                             price_cols: list, window: int = 28) -> go.Figure:
+    """대표 종목 rolling 변동성 시계열 (일별 std, 연환산)"""
+    prices_copy = prices.copy()
+    prices_copy['_day'] = (trading_day.values if trading_day is not None
+                           else prices_copy.index.date)
+    daily_last = prices_copy.groupby('_day').last()
+    daily_log_ret = np.log(daily_last).diff().iloc[1:]
+    daily_log_ret.index = pd.to_datetime(daily_log_ret.index)
+    daily_log_ret = daily_log_ret[daily_log_ret.index >= ANALYSIS_START]
+
+    rep_candidates = ['BTC', 'ETH', 'XRP', 'SOL', 'DOGE']
+    rep_tickers = [t for t in rep_candidates if t in price_cols][:5]
+
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+    fig = go.Figure()
+    for i, ticker in enumerate(rep_tickers):
+        if ticker not in daily_log_ret.columns:
+            continue
+        rolling_std = (daily_log_ret[ticker].rolling(window=window).std()
+                       * np.sqrt(ANNUALIZATION) * 100)
+        fig.add_trace(go.Scatter(
+            x=rolling_std.index.astype(str),
+            y=rolling_std.values,
+            mode='lines',
+            name=ticker,
+            line=dict(color=colors[i % len(colors)], width=1.5),
+            opacity=0.9,
+        ))
+    fig.update_layout(
+        title=f'종목별 Rolling 변동성 (window={window}일, 연환산 %, ×√{ANNUALIZATION})',
+        xaxis_title='날짜',
+        yaxis_title='연환산 변동성 (%)',
+        template='plotly_white',
+        height=450,
+    )
+    return fig
+
+
+def generate_report(summary_df: pd.DataFrame, fig: go.Figure, fig_rolling: go.Figure):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    # CSV 저장
-    csv_path = os.path.join(OUTPUT_DIR, 'summary_stats.csv')
+    # CSV → data/processed/phase2/ (CLAUDE.md 관례: 산출물은 data/processed/phaseN/)
+    processed_dir = os.path.join(PROJECT_ROOT, 'data', 'processed', 'phase2')
+    os.makedirs(processed_dir, exist_ok=True)
+    csv_path = os.path.join(processed_dir, 'summary_stats.csv')
     summary_df.to_csv(csv_path, encoding='utf-8-sig')
     print(f"[summary_stats] CSV 저장: {csv_path}")
 
     # HTML 저장
     fig_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+    rolling_html = fig_rolling.to_html(full_html=False, include_plotlyjs=False)
     table_html = summary_df.to_html(classes='table table-striped table-sm table-hover', border=0)
 
     col_desc = """
@@ -187,7 +230,14 @@ def generate_report(summary_df: pd.DataFrame, fig: go.Figure):
 </div>
 
 <div class="mb-5">
-<h2>2. 종목별 요약 통계표</h2>
+<h2>2. 대표 종목 Rolling 변동성 시계열</h2>
+<p>일별 log-return의 rolling std(window=28일)를 연환산(×√{ANNUALIZATION})한 변동성 추이입니다.
+변동성 군집 현상과 시장 충격 구간을 시각적으로 확인합니다.</p>
+{rolling_html}
+</div>
+
+<div class="mb-5">
+<h2>3. 종목별 요약 통계표</h2>
 {col_desc}
 {table_html}
 </div>
@@ -216,7 +266,8 @@ if __name__ == '__main__':
 
     print("[summary_stats] 차트 생성 중...")
     fig = plot_summary_interactive(summary_df)
+    fig_rolling = plot_rolling_volatility(prices, trading_day, price_cols)
 
     print("[summary_stats] 산출물 저장 중...")
-    csv_path, html_path = generate_report(summary_df, fig)
+    csv_path, html_path = generate_report(summary_df, fig, fig_rolling)
     print(f"[summary_stats] 완료: {csv_path}, {html_path}")

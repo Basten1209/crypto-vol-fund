@@ -189,6 +189,46 @@ def plot_acf_squared_returns(log_ret: pd.DataFrame, rep_tickers: list, nlags: in
     return fig
 
 
+def compute_monthly_correlation(daily_log_ret: pd.DataFrame) -> dict:
+    """월별 cross-asset correlation 행렬 계산"""
+    monthly_corr = {}
+    for period, group in daily_log_ret.groupby(daily_log_ret.index.to_period('M')):
+        if len(group) >= 5:
+            monthly_corr[str(period)] = group.corr()
+    return monthly_corr
+
+
+def plot_monthly_correlation(monthly_corr: dict) -> go.Figure:
+    """월별 평균 off-diagonal pairwise correlation 시계열"""
+    months = sorted(monthly_corr.keys())
+    avg_corrs = []
+    for m in months:
+        corr_mat = monthly_corr[m].values
+        n = corr_mat.shape[0]
+        mask = np.triu(np.ones((n, n), dtype=bool), k=1)
+        avg_corrs.append(float(np.nanmean(corr_mat[mask])))
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=months,
+        y=avg_corrs,
+        mode='lines+markers',
+        marker=dict(size=8, color='steelblue'),
+        line=dict(color='steelblue', width=2),
+        name='평균 Pairwise Correlation',
+        hovertemplate='%{x}<br>Avg Corr: %{y:.3f}<extra></extra>',
+    ))
+    fig.add_hline(y=0, line_dash='dash', line_color='gray', opacity=0.5)
+    fig.update_layout(
+        title='Cross-Asset 상관관계 시간 변화 (월별 평균 Pairwise Correlation)',
+        xaxis_title='월',
+        yaxis_title='평균 Pairwise Correlation',
+        template='plotly_white',
+        height=400,
+    )
+    return fig
+
+
 def plot_stats_scatter(min_stats: pd.DataFrame) -> go.Figure:
     """kurtosis vs std scatter (heavy-tail 구조 확인)"""
     fig = go.Figure()
@@ -217,7 +257,7 @@ def plot_stats_scatter(min_stats: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def generate_report(fig_kurtosis, fig_acf, fig_scatter, min_stats, day_stats):
+def generate_report(fig_kurtosis, fig_acf, fig_scatter, fig_corr, min_stats, day_stats):
     """HTML 리포트 생성"""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -225,6 +265,7 @@ def generate_report(fig_kurtosis, fig_acf, fig_scatter, min_stats, day_stats):
     kurtosis_html = fig_kurtosis.to_html(full_html=False, include_plotlyjs='cdn')
     acf_html = fig_acf.to_html(full_html=False, include_plotlyjs=False)
     scatter_html = fig_scatter.to_html(full_html=False, include_plotlyjs=False)
+    corr_html = fig_corr.to_html(full_html=False, include_plotlyjs=False)
 
     # 요약 통계 테이블
     summary_html = min_stats.round(4).to_html(classes='table table-striped table-sm', border=0)
@@ -267,7 +308,14 @@ def generate_report(fig_kurtosis, fig_acf, fig_scatter, min_stats, day_stats):
 </div>
 
 <div class="section">
-<h2>4. 1분봉 기초 통계 테이블</h2>
+<h2>4. Cross-Asset 상관관계 시간 변화 (월별)</h2>
+<p>자산 간 평균 pairwise correlation의 월별 추이입니다.
+correlation이 높을수록 분산 효과가 약화되어 포트폴리오 최적화 효과가 감소합니다.</p>
+{corr_html}
+</div>
+
+<div class="section">
+<h2>5. 1분봉 기초 통계 테이블</h2>
 {summary_html}
 </div>
 
@@ -303,11 +351,15 @@ if __name__ == '__main__':
     rep_candidates = ['BTC', 'ETH', 'XRP', 'SOL', 'DOGE']
     rep_tickers = [t for t in rep_candidates if t in min_log_ret.columns][:5]
 
+    print("[distribution_eda] 월별 cross-asset correlation 계산 중...")
+    monthly_corr = compute_monthly_correlation(day_log_ret)
+
     print("[distribution_eda] 차트 생성 중...")
     fig_kurtosis = plot_kurtosis_distribution(min_stats, day_stats)
     fig_acf = plot_acf_squared_returns(min_log_ret, rep_tickers)
     fig_scatter = plot_stats_scatter(min_stats)
+    fig_corr = plot_monthly_correlation(monthly_corr)
 
     print("[distribution_eda] HTML 리포트 생성 중...")
-    out_path = generate_report(fig_kurtosis, fig_acf, fig_scatter, min_stats, day_stats)
+    out_path = generate_report(fig_kurtosis, fig_acf, fig_scatter, fig_corr, min_stats, day_stats)
     print(f"[distribution_eda] 완료: {out_path}")
