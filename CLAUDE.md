@@ -32,6 +32,7 @@
 │   │
 │   ├── phase2_eda/             # EDA — @iron-4842
 │   │   ├── distribution_eda.py
+│   │   ├── summary_stats.py
 │   │   ├── prvm_signature_plot.py
 │   │   ├── noise_signal_estimator.py
 │   │   └── jump_activity_eda.py
