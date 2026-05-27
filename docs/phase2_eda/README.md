@@ -84,6 +84,24 @@ HTML 리포트에는 연환산 수익률 vs 변동성 인터랙티브 scatter (�
 
 ---
 
+### 6. 보고서 삽입용 정적 EDA Figure
+**생성 스크립트**: `scripts/run_phase2_report_eda.py`
+
+| 산출물 | 설명 |
+|------|------|
+| `figures/fig05_log_return_histograms.png` | BTC/ETH/XRP/SOL 1분 log-return histogram + normal density overlay. x축은 1%~99% 분위수 구간 |
+| `figures/fig06_asset_mean_return_bar.png` | 50개 자산 평균 1분 log-return bar plot. BTC/ETH/XRP/SOL 강조 |
+| `figures/fig07_log_kurtosis_boxplot.png` | `log(ordinary kurtosis)` box plot + Student-t(5) 기준선 `log(9)` |
+| `../../data/processed/phase2_eda/report_log_return_summary.csv` | 자산별 1분/일별 log-return 요약, ordinary/excess/log kurtosis |
+| `report_eda_preview.html` | 세 figure와 summary table을 함께 확인하는 미리보기 페이지 |
+
+**분석 기간**: `trading_day` 기준 2025-03-01 ~ 2026-03-30.  
+원천 패널은 2026-03-31까지 존재하나, `trading_day=2026-03-31`은 partial day라 보고서용 figure에서 제외.
+
+**주요 발견**: 50개 자산의 log ordinary kurtosis 중앙값 ≈ 4.360, Student-t(5) 기준선 `log(9)≈2.197` 초과 자산 48/50.
+
+---
+
 ## 재실행 방법
 
 ```bash
@@ -93,6 +111,9 @@ python3 -m src.phase2_eda.prvm_signature_plot
 python3 -m src.phase2_eda.noise_signal_estimator
 python3 -m src.phase2_eda.jump_activity_eda
 python3 -m src.phase2_eda.summary_stats
+
+# 보고서 삽입용 PNG 산출
+.venv/bin/python scripts/run_phase2_report_eda.py --price-panel price_panel.csv --start 2025-03-01 --end 2026-03-30
 ```
 
 ---
