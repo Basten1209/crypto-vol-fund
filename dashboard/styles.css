@@ -320,8 +320,8 @@ input[type="range"] {
 
 .dashboard-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(380px, 0.9fr);
-  grid-template-rows: 520px 320px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.85fr);
+  grid-template-rows: 380px 430px 320px;
   gap: 10px;
   min-height: 0;
   margin-top: 0;
@@ -337,32 +337,27 @@ input[type="range"] {
 
 .panel--performance {
   grid-column: 1;
-  grid-row: 1;
+  grid-row: 2;
 }
 
 .panel--risk {
   grid-column: 2;
-  grid-row: 1;
-}
-
-.panel--monthly {
-  grid-column: 1 / 3;
   grid-row: 2;
 }
 
-.side-stack {
-  display: grid;
-  grid-column: 3;
-  grid-row: 1 / 3;
-  grid-template-rows: 520px 320px;
-  gap: 10px;
-  min-width: 0;
-  min-height: 0;
+.panel--monthly {
+  grid-column: 1 / -1;
+  grid-row: 3;
 }
 
-.panel--orders,
+.panel--orders {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 .panel--portfolio {
-  min-height: 0;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .panel--wide {
@@ -536,38 +531,105 @@ input[type="range"] {
   color: var(--ink);
 }
 
-.holding-list {
+.portfolio-donut-wrap {
   display: grid;
-  gap: 9px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.donut-layout {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.85fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.portfolio-donut {
+  position: relative;
+  width: min(100%, 190px);
+  aspect-ratio: 1;
+  justify-self: center;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(32, 33, 36, 0.08);
+}
+
+.donut-hole {
+  position: absolute;
+  inset: 22%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.donut-hole strong,
+.donut-hole span {
+  display: block;
+}
+
+.donut-hole strong {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.donut-hole span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.donut-summary {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.donut-summary span,
+.donut-summary small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.donut-summary strong {
+  font-size: clamp(19px, 2vw, 27px);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.donut-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 12px;
   min-height: 0;
   overflow: auto;
   padding-right: 2px;
 }
 
-.holding-row {
+.donut-legend-row {
   display: grid;
-  grid-template-columns: 74px 1fr 58px;
-  gap: 10px;
+  grid-template-columns: 10px minmax(42px, 1fr) 58px;
+  gap: 7px;
   align-items: center;
-  min-height: 28px;
+  min-width: 0;
+}
+
+.donut-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
 
 .ticker {
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.bar-track {
-  height: 10px;
-  background: #ece7df;
-  border-radius: 8px;
+  min-width: 0;
   overflow: hidden;
-}
-
-.bar-fill {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, var(--teal), #52a097);
+  font-weight: 800;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .weight {
@@ -728,6 +790,14 @@ tr:last-child td {
     padding: 10px;
   }
 
+  .dashboard-main {
+    grid-template-rows: 330px 360px 270px;
+  }
+
+  .portfolio-donut {
+    width: min(100%, 150px);
+  }
+
   th,
   td {
     padding: 6px 9px;
@@ -768,18 +838,10 @@ tr:last-child td {
   .panel--performance,
   .panel--risk,
   .panel--monthly,
-  .side-stack {
+  .panel--orders,
+  .panel--portfolio {
     grid-column: auto;
     grid-row: auto;
-  }
-
-  .side-stack {
-    grid-template-rows: none;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .panel--orders {
-    grid-column: 1 / -1;
   }
 
   .control-block--date {
@@ -795,7 +857,7 @@ tr:last-child td {
   }
 
   .table-wrap,
-  .holding-list {
+  .portfolio-donut-wrap {
     max-height: 280px;
   }
 }
@@ -821,10 +883,6 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
-  .side-stack {
-    grid-template-columns: 1fr;
-  }
-
   .control-block--date {
     grid-column: span 1;
   }
@@ -837,5 +895,14 @@ tr:last-child td {
 
   .chart {
     min-height: 240px;
+  }
+
+  .donut-layout,
+  .donut-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .donut-legend-row {
+    grid-template-columns: 10px minmax(0, 1fr) 58px;
   }
 }

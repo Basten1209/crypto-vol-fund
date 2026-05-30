@@ -8,6 +8,21 @@ const state = {
 };
 
 const els = {};
+const DONUT_COLORS = [
+  "#0f766e",
+  "#c8553d",
+  "#3266a8",
+  "#b7791f",
+  "#2f855a",
+  "#7c3aed",
+  "#b83232",
+  "#0891b2",
+  "#64748b",
+  "#a16207",
+  "#be185d",
+  "#475569",
+  "#d8d2c7",
+];
 
 document.addEventListener("DOMContentLoaded", async () => {
   cacheElements();
@@ -166,7 +181,9 @@ function updateControlState() {
   els.performanceBadge.textContent = context.inHoldWindow
     ? `${state.cycle}D ${policy.label} · ${shortDate(context.holdStart)} to ${shortDate(context.selectedDate)}`
     : `${state.cycle}D ${policy.label} · Cash`;
-  els.portfolioWindow.textContent = `${cycle.rebalance_date || "-"} target · hold ${policy.hold_start || "-"} to ${policy.hold_end || "-"}`;
+  els.portfolioWindow.textContent = context.inHoldWindow
+    ? `${cycle.rebalance_date || "-"} target · current weights`
+    : `${cycle.rebalance_date || "-"} target · hold ${policy.hold_start || "-"} to ${policy.hold_end || "-"}`;
 }
 
 function renderKpis() {
@@ -213,18 +230,72 @@ function renderHoldings() {
     els.holdingsList.innerHTML = `<div class="empty">Cash/off-window 상태입니다. 다음 리밸런싱까지 포트폴리오 주문이 없습니다.</div>`;
     return;
   }
-  els.holdingsList.innerHTML = selected.holdings
-    .map((row) => {
-      const width = Math.max(0.8, Math.min(100, row.weight * 100));
-      return `
-        <div class="holding-row">
+  const slices = donutSlices(selected.holdings, 12);
+  const gradient = conicGradient(slices);
+  const top = slices[0];
+  els.holdingsList.innerHTML = `
+    <div class="donut-layout">
+      <div
+        class="portfolio-donut"
+        style="background:${gradient}"
+        role="img"
+        aria-label="Portfolio weight donut"
+      >
+        <div class="donut-hole">
+          <strong>${selected.active_count}</strong>
+          <span>assets</span>
+        </div>
+      </div>
+      <div class="donut-summary">
+        <span>Top weight</span>
+        <strong>${top ? `${escapeHtml(top.ticker)} ${percent(top.weight)}` : "-"}</strong>
+        <small>${selected.label} · ${selected.in_hold_window ? "current weights" : "target weights"}</small>
+      </div>
+    </div>
+    <div class="donut-legend">
+      ${slices.map((row) => `
+        <div class="donut-legend-row">
+          <span class="donut-swatch" style="background:${row.color}"></span>
           <span class="ticker">${escapeHtml(row.ticker)}</span>
-          <span class="bar-track"><span class="bar-fill" style="width:${width}%"></span></span>
           <span class="weight">${percent(row.weight)}</span>
         </div>
-      `;
-    })
-    .join("");
+      `).join("")}
+    </div>
+  `;
+}
+
+function donutSlices(rows, limit) {
+  const visible = rows
+    .filter((row) => Number.isFinite(row.weight) && row.weight > 0)
+    .slice(0, limit)
+    .map((row, idx) => ({
+      ticker: row.ticker,
+      weight: row.weight,
+      color: DONUT_COLORS[idx % (DONUT_COLORS.length - 1)],
+    }));
+  const visibleTotal = visible.reduce((total, row) => total + row.weight, 0);
+  const remaining = Math.max(0, 1 - visibleTotal);
+  if (remaining > 0.0005) {
+    visible.push({
+      ticker: "Other",
+      weight: remaining,
+      color: DONUT_COLORS[DONUT_COLORS.length - 1],
+    });
+  }
+  return visible;
+}
+
+function conicGradient(slices) {
+  if (!slices.length) return "#ece7df";
+  const total = slices.reduce((sum, row) => sum + row.weight, 0) || 1;
+  let cursor = 0;
+  const stops = slices.map((row, idx) => {
+    const start = cursor;
+    const end = idx === slices.length - 1 ? 100 : cursor + (row.weight / total) * 100;
+    cursor = end;
+    return `${row.color} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+  });
+  return `conic-gradient(${stops.join(", ")})`;
 }
 
 function renderOrders() {
@@ -451,24 +522,34 @@ function aggregatePerformance(strategy) {
 function windowSeries(strategy, policy, cycle, context) {
   if (!context.inHoldWindow || !context.holdStart) return [];
   const rows = series(strategy, policy, cycle).filter((row) => {
-    return row.date >= context.holdStart && row.date <= context.selectedDate;
+    return row.date > context.holdStart && row.date <= context.selectedDate;
   });
   let equity = 1;
   let peak = 1;
-  return rows.map((row) => {
+  const output = [{
+    date: context.holdStart,
+    daily_return: 0,
+    equity,
+    drawdown: 0,
+    realized_risk_annualized: Number.NaN,
+    isBaseline: true,
+  }];
+  rows.forEach((row) => {
     equity *= 1 + row.daily_return;
     peak = Math.max(peak, equity);
-    return {
+    output.push({
       ...row,
       equity,
       drawdown: equity / peak - 1,
-    };
+      isBaseline: false,
+    });
   });
+  return output;
 }
 
 function performanceFromWindow(rows) {
   if (!rows.length) return null;
-  const returns = rows.map((row) => row.daily_return).filter(Number.isFinite);
+  const returns = rows.filter((row) => !row.isBaseline).map((row) => row.daily_return).filter(Number.isFinite);
   const equity = rows.map((row) => row.equity).filter(Number.isFinite);
   const risks = rows.map((row) => row.realized_risk_annualized).filter(Number.isFinite);
   const volatility = returns.length >= 2 ? sampleStd(returns) * Math.sqrt(365) : Number.NaN;

@@ -109,6 +109,42 @@
       </section>
 
       <section class="dashboard-main">
+        <section class="panel panel--orders">
+          <div class="panel-head">
+            <div>
+              <h2>Orders</h2>
+              <p id="orderSummary">Target/current/delta weights</p>
+            </div>
+            <span id="orderBadge" class="badge">No order</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Side</th>
+                  <th>Current</th>
+                  <th>Target</th>
+                  <th>Delta</th>
+                  <th>Order amount</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel panel--portfolio">
+          <div class="panel-head">
+            <div>
+              <h2>Portfolio</h2>
+              <p id="portfolioWindow">Target composition</p>
+            </div>
+            <span id="capBadge" class="badge badge--ok">Cap OK</span>
+          </div>
+          <div id="holdingsList" class="portfolio-donut-wrap"></div>
+        </section>
+
         <section class="panel panel--performance">
           <div class="panel-head">
             <div>
@@ -148,44 +184,6 @@
           </div>
           <div id="monthlyChart" class="chart chart--bar" role="img" aria-label="Monthly return chart"></div>
         </section>
-
-        <aside class="side-stack" aria-label="Orders and portfolio">
-          <section class="panel panel--orders">
-            <div class="panel-head">
-              <div>
-                <h2>Orders</h2>
-                <p id="orderSummary">Target/current/delta weights</p>
-              </div>
-              <span id="orderBadge" class="badge">No order</span>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Ticker</th>
-                    <th>Side</th>
-                    <th>Current</th>
-                    <th>Target</th>
-                    <th>Delta</th>
-                    <th>Order amount</th>
-                  </tr>
-                </thead>
-                <tbody id="ordersTable"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="panel panel--portfolio">
-          <div class="panel-head">
-            <div>
-              <h2>Portfolio</h2>
-              <p id="portfolioWindow">Target composition</p>
-            </div>
-            <span id="capBadge" class="badge badge--ok">Cap OK</span>
-          </div>
-          <div id="holdingsList" class="holding-list"></div>
-        </section>
-        </aside>
       </section>
     </main>
 

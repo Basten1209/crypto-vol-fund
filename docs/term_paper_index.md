@@ -357,8 +357,8 @@ Digital Asset, Public Fund, Volatility Matrix, PRVM, EWMA, Minimum Variance Port
 - performance chart
 - drawdown chart
 - monthly return chart
-- order table
-- portfolio holdings view
+- top-positioned order table
+- portfolio donut chart with top weights and Other bucket
 
 ### 7.3 Simple Mode
 
