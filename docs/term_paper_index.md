@@ -258,7 +258,8 @@ Digital Asset, Public Fund, Volatility Matrix, PRVM, EWMA, Minimum Variance Port
 
 - 매월 첫 거래일 리밸런싱
 - first 7-day / first 14-day hold window
-- off-window cash 처리
+- 매월 동일 초기 AUM으로 새 단기 상품 시작
+- 성과표는 active hold-window만 포함
 - Simple Mode와 Managed Mode 비교
 
 ### 5.8 주요 실험 결과 해석

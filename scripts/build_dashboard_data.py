@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build static dashboard data from Phase 5/6 monthly capped outputs."""
+"""Build static dashboard data from Phase 5/6 monthly capped hold-window outputs."""
 
 from __future__ import annotations
 
@@ -102,6 +102,7 @@ def main() -> int:
             "single_asset_cap": CAP_WEIGHT,
             "transaction_costs": "ignored",
             "aum_policy": "reset_to_default_aum_at_each_monthly_entry",
+            "performance_semantics": "active_hold_windows_only",
             "policies": POLICY_LABELS,
             "cycles": sorted(int(cycle) for cycle in weights),
             "tickers": tickers,
@@ -458,7 +459,12 @@ def validate_dashboard_data(data: dict[str, Any]) -> None:
     if not managed_14:
         raise ValueError("Missing 14D Managed Mode performance row")
     row = managed_14[0]
-    for field in ["total_return", "sharpe_ratio", "max_drawdown"]:
+    for field in [
+        "total_return_on_hold_windows",
+        "sharpe_on_invested_days",
+        "max_drawdown_on_hold_windows",
+        "annualized_volatility_on_invested_days",
+    ]:
         if not isinstance(row[field], float) or not math.isfinite(row[field]):
             raise ValueError(f"Invalid 14D Managed Mode {field}")
 

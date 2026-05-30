@@ -21,7 +21,6 @@ from src.phase6_backtest.metrics import (  # noqa: E402
     annualized_return,
     annualized_volatility,
     max_drawdown,
-    performance_row,
     sharpe_ratio,
 )
 from src.utils import ensure_dir, repo_relative_path  # noqa: E402
@@ -60,7 +59,6 @@ def run_phase6_backtest(
     )
 
     backtests: list[pd.DataFrame] = []
-    performance_rows: list[dict[str, Any]] = []
     interval_frames: list[pd.DataFrame] = []
 
     btc_result = _run_strategy(
@@ -76,26 +74,9 @@ def run_phase6_backtest(
         show_progress=True,
         progress_label="btc_hodl",
     )
-    btc_daily_returns = btc_result["daily"]["daily_return"].to_numpy(dtype=np.float64)
     backtests.append(btc_result["daily"])
     interval_frames.append(btc_result["interval"])
-    performance_rows.append(
-        _with_policy(
-            performance_row(
-            strategy="btc_hodl",
-            cycle_days=None,
-            daily_returns=btc_daily_returns,
-            equity=btc_result["daily"]["equity"].to_numpy(dtype=np.float64),
-            btc_daily_returns=btc_daily_returns,
-            annualization=config.ANNUALIZATION,
-            risk_free_rate=config.RISK_FREE_RATE,
-            ),
-            "buy_and_hold",
-            btc_result,
-        )
-    )
 
-    dm_rows: list[dict[str, Any]] = []
     for cycle in portfolios["cycles"]:
         cycle_data = portfolios["cycles"][cycle]
         equal_weight_scheduled = _equal_weight_scheduled_weights(cycle_data, len(portfolios["tickers"]))
@@ -137,42 +118,12 @@ def run_phase6_backtest(
                 daily = result["daily"]
                 backtests.append(daily)
                 interval_frames.append(result["interval"])
-                performance_rows.append(
-                    _with_policy(
-                        performance_row(
-                            strategy=str(daily["strategy"].iloc[0]),
-                            cycle_days=cycle,
-                            daily_returns=daily["daily_return"].to_numpy(dtype=np.float64),
-                            equity=daily["equity"].to_numpy(dtype=np.float64),
-                            btc_daily_returns=btc_daily_returns,
-                            turnover_mean=result["turnover_mean"],
-                            realized_risk_mean=float(daily["realized_risk_annualized"].mean()),
-                            annualization=config.ANNUALIZATION,
-                            risk_free_rate=config.RISK_FREE_RATE,
-                        ),
-                        rebalance_policy,
-                        result,
-                    )
-                )
-
-            min_var_loss = np.square(min_var["daily"]["daily_return"].to_numpy(dtype=np.float64))
-            ew_loss = np.square(equal_weight["daily"]["daily_return"].to_numpy(dtype=np.float64))
-            dm = diebold_mariano_test(min_var_loss, ew_loss, lag=max(0, cycle - 1))
-            dm_rows.append(
-                {
-                    "comparison": "minimum_variance_vs_equal_weight",
-                    "rebalance_policy": rebalance_policy,
-                    "cycle_days": cycle,
-                    "loss": "squared_daily_return",
-                    **dm,
-                }
-            )
 
     output_dir = ensure_dir(output_dir)
     daily_df = pd.concat(backtests, ignore_index=True)
     interval_df = pd.concat(interval_frames, ignore_index=True)
-    performance_df = pd.DataFrame(performance_rows)
-    dm_df = pd.DataFrame(dm_rows)
+    performance_df = _hold_window_performance_table(daily_df)
+    dm_df = _hold_window_dm_tests(daily_df)
 
     daily_path = output_dir / "phase6_daily_returns.csv"
     interval_path = output_dir / "phase6_interval_returns.csv"
@@ -197,7 +148,8 @@ def run_phase6_backtest(
             "transaction_costs": "ignored",
             "weight_drift": "enabled_between_rebalances",
             "scheduled_hold_windows": "enabled_when_phase5_scheduled_dates_do_not_cover_all_days",
-            "off_window_return": "cash_0_percent",
+            "performance_table": "active_hold_windows_only",
+            "off_window_state": "cash_rows_retained_in_daily_returns_not_in_performance_table",
             "rebalance_policies": ["enter_once_then_drift", "daily_rebalance_to_target"],
         },
         "n_assets": int(len(portfolios["tickers"])),
@@ -223,6 +175,7 @@ def run_phase6_backtest(
     print(f"portfolio_input: {portfolio_path}")
     print(f"output_dir: {output_dir}")
     print(f"backtest_dates: {returns['dates'][0]} to {returns['dates'][-1]} ({len(returns['dates'])} days)")
+    print("performance_table: active hold windows only")
     print(f"saved performance: {repo_relative_path(performance_path, ROOT)}")
     print(f"saved report: {repo_relative_path(report_path, ROOT)}")
     return report
@@ -267,6 +220,102 @@ def _write_monthly_comparison_outputs(output_dir: Path, daily_df: pd.DataFrame) 
             }
         )
     return outputs
+
+
+def _hold_window_performance_table(daily_df: pd.DataFrame) -> pd.DataFrame:
+    compare = daily_df[daily_df["strategy"].isin(["minimum_variance", "equal_weight"])].copy()
+    compare = compare[compare["cycle_days"].notna()]
+    compare = compare[compare["ending_active_count"] > 0]
+    if compare.empty:
+        return pd.DataFrame()
+
+    compare["date"] = pd.to_datetime(compare["date"])
+    compare["cycle_days"] = compare["cycle_days"].astype(int)
+
+    rows: list[dict[str, Any]] = []
+    group_cols = ["strategy", "rebalance_policy", "cycle_days"]
+    for (strategy, policy, cycle_days), group in compare.groupby(group_cols, sort=True):
+        ordered = group.sort_values("date")
+        daily_returns = ordered["daily_return"].to_numpy(dtype=np.float64)
+        monthly_returns = (
+            ordered.assign(month=ordered["date"].dt.to_period("M").astype(str))
+            .groupby("month")["daily_return"]
+            .apply(lambda values: float(np.prod(1.0 + values.to_numpy(dtype=np.float64)) - 1.0))
+        )
+        equity = np.cumprod(1.0 + daily_returns)
+        rows.append(
+            {
+                "strategy": str(strategy),
+                "mode": _policy_label(str(policy)),
+                "rebalance_policy": str(policy),
+                "cycle_days": int(cycle_days),
+                "n_months": int(monthly_returns.size),
+                "invested_days": int(len(daily_returns)),
+                "first_hold_date": ordered["date"].iloc[0].date().isoformat(),
+                "last_hold_date": ordered["date"].iloc[-1].date().isoformat(),
+                "total_return_on_hold_windows": float(equity[-1] - 1.0),
+                "mean_monthly_hold_return": float(monthly_returns.mean()),
+                "median_monthly_hold_return": float(monthly_returns.median()),
+                "positive_month_rate": float((monthly_returns > 0).mean()),
+                "annualized_return_on_invested_days": annualized_return(
+                    daily_returns,
+                    annualization=config.ANNUALIZATION,
+                ),
+                "annualized_volatility_on_invested_days": annualized_volatility(
+                    daily_returns,
+                    annualization=config.ANNUALIZATION,
+                ),
+                "sharpe_on_invested_days": sharpe_ratio(
+                    daily_returns,
+                    risk_free_rate=config.RISK_FREE_RATE,
+                    annualization=config.ANNUALIZATION,
+                ),
+                "max_drawdown_on_hold_windows": max_drawdown(equity),
+                "realized_risk_annualized_mean": float(ordered["realized_risk_annualized"].mean()),
+                "ending_top_weight_max": float(ordered["ending_top_weight"].max()),
+                "ending_active_count_mean": float(ordered["ending_active_count"].mean()),
+            }
+        )
+    return pd.DataFrame(rows).sort_values(["cycle_days", "mode", "strategy"]).reset_index(drop=True)
+
+
+def _hold_window_dm_tests(daily_df: pd.DataFrame) -> pd.DataFrame:
+    compare = daily_df[daily_df["strategy"].isin(["minimum_variance", "equal_weight"])].copy()
+    compare = compare[compare["cycle_days"].notna()]
+    compare = compare[compare["ending_active_count"] > 0]
+    if compare.empty:
+        return pd.DataFrame()
+
+    compare["cycle_days"] = compare["cycle_days"].astype(int)
+    rows: list[dict[str, Any]] = []
+    for (policy, cycle_days), group in compare.groupby(["rebalance_policy", "cycle_days"], sort=True):
+        pivot = group.pivot_table(
+            index="date",
+            columns="strategy",
+            values="daily_return",
+            aggfunc="first",
+        ).dropna(subset=["minimum_variance", "equal_weight"])
+        min_var_loss = np.square(pivot["minimum_variance"].to_numpy(dtype=np.float64))
+        ew_loss = np.square(pivot["equal_weight"].to_numpy(dtype=np.float64))
+        rows.append(
+            {
+                "comparison": "minimum_variance_vs_equal_weight",
+                "mode": _policy_label(str(policy)),
+                "rebalance_policy": str(policy),
+                "cycle_days": int(cycle_days),
+                "loss": "squared_daily_return_active_hold_windows",
+                **diebold_mariano_test(min_var_loss, ew_loss, lag=max(0, int(cycle_days) - 1)),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _policy_label(policy: str) -> str:
+    labels = {
+        "enter_once_then_drift": "Simple Mode",
+        "daily_rebalance_to_target": "Managed Mode",
+    }
+    return labels.get(policy, policy)
 
 
 def _monthly_strategy_metrics(daily_df: pd.DataFrame) -> pd.DataFrame:
@@ -532,13 +581,6 @@ def _json_ready(value):
     return value
 
 
-def _with_policy(row: dict[str, Any], rebalance_policy: str, result: dict[str, Any]) -> dict[str, Any]:
-    row["rebalance_policy"] = rebalance_policy
-    row["turnover_sum"] = result["turnover_sum"]
-    row["turnover_action_count"] = result["turnover_action_count"]
-    return row
-
-
 def _write_phase6_markdown_report(path: Path, report: dict[str, Any]) -> None:
     performance = report["performance"]
     dm_tests = report["dm_tests"]
@@ -548,14 +590,15 @@ def _write_phase6_markdown_report(path: Path, report: dict[str, Any]) -> None:
         f"- Period: {report['first_date']} to {report['last_date']} ({report['n_backtest_days']} days)",
         f"- Evaluation frequency: {report['params']['eval_freq_min']} minutes",
         "- Transaction costs: ignored",
-        "- Hold-period weight drift: enabled",
+        "- Performance table: active monthly hold windows only.",
+        "- Each monthly product starts from the same initial AUM at the first available date of the month.",
         "- Primary comparison: minimum variance versus equal-weight on the same 50-asset universe.",
-        "- BTC HODL is retained only as a market reference, not the main benchmark for this strategy design.",
+        "- BTC HODL is retained only in daily/monthly reference outputs, not in the main performance table.",
         "",
-        "## Performance",
+        "## Hold-Window Performance",
         "",
-        "| Strategy | Policy | Cycle | Total Return | Ann. Return | Ann. Vol | Sharpe | MDD | IR vs BTC | Turnover Mean | Turnover Sum | Realized Risk |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Strategy | Mode | Cycle | Months | Invested Days | Total Return | Mean Monthly Return | Ann. Vol | Sharpe | MDD | Realized Risk |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in performance:
         lines.append(_performance_markdown_row(row))
@@ -580,7 +623,7 @@ def _write_phase6_markdown_report(path: Path, report: dict[str, Any]) -> None:
             "## Interpretation",
             "",
             "- The defensible benchmark framing is minimum variance versus equal-weight, because both use the same selected 50-asset universe and rebalance cycle.",
-            "- BTC HODL is useful context, but it answers a different question: whether the active multi-asset strategy beats passive BTC exposure.",
+            "- Rows are computed only on 7-day / 14-day active hold windows, matching the monthly short-product framing.",
             "- Minimum variance portfolios should be judged first on realized risk, drawdown, and loss reduction versus equal-weight.",
             "- Concentration remains a key diagnostic; uncapped runs reached above 90% top weight, so capped variants should be compared before final model-portfolio framing.",
             "",
@@ -590,13 +633,13 @@ def _write_phase6_markdown_report(path: Path, report: dict[str, Any]) -> None:
 
 
 def _performance_markdown_row(row: dict[str, Any]) -> str:
-    cycle = "" if row["cycle_days"] is None or not np.isfinite(row["cycle_days"]) else int(row["cycle_days"])
     return (
-        f"| {row['strategy']} | {row['rebalance_policy']} | {cycle} | {_fmt_pct(row['total_return'])} | "
-        f"{_fmt_pct(row['annualized_return'])} | {_fmt_pct(row['annualized_volatility'])} | "
-        f"{_fmt_num(row['sharpe_ratio'])} | {_fmt_pct(row['max_drawdown'])} | "
-        f"{_fmt_num(row['information_ratio_vs_btc'])} | {_fmt_num(row['turnover_mean'])} | "
-        f"{_fmt_num(row['turnover_sum'])} | "
+        f"| {row['strategy']} | {row['mode']} | {int(row['cycle_days'])} | {int(row['n_months'])} | "
+        f"{int(row['invested_days'])} | {_fmt_pct(row['total_return_on_hold_windows'])} | "
+        f"{_fmt_pct(row['mean_monthly_hold_return'])} | "
+        f"{_fmt_pct(row['annualized_volatility_on_invested_days'])} | "
+        f"{_fmt_num(row['sharpe_on_invested_days'])} | "
+        f"{_fmt_pct(row['max_drawdown_on_hold_windows'])} | "
         f"{_fmt_pct(row['realized_risk_annualized_mean'])} |"
     )
 

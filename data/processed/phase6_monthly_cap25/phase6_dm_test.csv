@@ -1,5 +1,5 @@
-comparison,rebalance_policy,cycle_days,loss,n_obs,lag,mean_loss_diff,dm_stat,p_value
-minimum_variance_vs_equal_weight,enter_once_then_drift,7,squared_daily_return,395,6,-0.0001189983657758893,-1.7646342928031915,0.07762524817020197
-minimum_variance_vs_equal_weight,daily_rebalance_to_target,7,squared_daily_return,395,6,-0.0001207779441965963,-1.8853869163291688,0.05937761915455272
-minimum_variance_vs_equal_weight,enter_once_then_drift,14,squared_daily_return,395,13,-0.0002816985059086869,-2.822819575105339,0.004760335276630697
-minimum_variance_vs_equal_weight,daily_rebalance_to_target,14,squared_daily_return,395,13,-0.00028037884860913594,-2.896546092887349,0.003772952126494668
+comparison,mode,rebalance_policy,cycle_days,loss,n_obs,lag,mean_loss_diff,dm_stat,p_value
+minimum_variance_vs_equal_weight,Managed Mode,daily_rebalance_to_target,7,squared_daily_return_active_hold_windows,91,6,-0.0005242559116225882,-1.9670400039780478,0.049178599043606414
+minimum_variance_vs_equal_weight,Managed Mode,daily_rebalance_to_target,14,squared_daily_return_active_hold_windows,182,13,-0.0006085145340692786,-3.050261170894037,0.002286424456498629
+minimum_variance_vs_equal_weight,Simple Mode,enter_once_then_drift,7,squared_daily_return_active_hold_windows,91,6,-0.0005165313679283108,-1.8264223615962363,0.06778666607991428
+minimum_variance_vs_equal_weight,Simple Mode,enter_once_then_drift,14,squared_daily_return_active_hold_windows,182,13,-0.000611378625461161,-2.966238726564554,0.003014663854831033

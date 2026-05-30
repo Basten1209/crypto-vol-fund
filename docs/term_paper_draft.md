@@ -247,7 +247,7 @@ Minimum variance portfolio는 기대수익률을 직접 예측하기보다 포�
 
 원천 데이터는 Upbit의 월별 1분봉 CSV이다. 각 CSV에는 `date_time_utc`, `open`, `high`, `low`, `close`, `acc_trade_price`, `acc_trade_volume`이 포함된다. 전처리 과정에서는 UTC timestamp를 KST로 변환하고, 50개 최종 자산에 대해 close price wide panel을 구성한다. 결측치는 forward fill 후 backward fill로 처리되었으며, 최종 가격 패널에는 결측치가 없도록 정리되었다.
 
-분석 기간은 2025-03-01부터 2026-03-30까지이다. 2025-02-01부터 2025-02-28까지의 초기 기간은 EWMA 초기값 산출에 사용되며, 실제 forecast target은 2025-03-01부터 시작한다.
+분석 기간은 2025-03-01부터 2026-03-30까지이다. 2025-02-01부터 2025-02-28까지의 기간은 첫 forecast target을 위한 28일 rolling EWMA window로 사용되며, 실제 forecast target은 2025-03-01부터 시작한다.
 
 앞선 EDA에서 확인할 로그수익률의 fat-tail, 자산별 수익률 이질성, 높은 log kurtosis는 본 연구가 PRVM 기반 변동성 행렬 추정을 사용하는 직접적인 동기이다. 즉, 4장의 방법론은 임의로 선택된 수학적 절차가 아니라, 3.6절에서 관찰되는 디지털자산 데이터의 분포적 특성에 대응하기 위한 추정 전략이다.
 
@@ -494,21 +494,20 @@ QLIKE 기준으로도 jump-adjusted PRVM EWMA가 더 낮은 손실을 보였다.
 
 25% cap을 적용한 결과, 포트폴리오의 단일종목 집중도는 크게 완화되었다. 특히 monthly cap25 구조는 상품 설명 측면에서 더 직관적이다. 매월 초 포트폴리오를 제시하고, 7일 또는 14일 동안 보유하는 구조는 "월간 디지털자산 변동성 모델 포트폴리오"라는 형태로 제안하기 쉽다.
 
-전체 성과표는 다음과 같다.
+active hold-window 기준 전체 성과표는 다음과 같다. 각 월은 동일 초기 AUM으로 시작하는 독립 7D / 14D 상품으로 해석하며, off-window 날짜는 성과 계산에 포함하지 않는다.
 
-| Strategy | Policy | Cycle | Total Return | Ann. Vol | Sharpe | MDD | Realized Risk |
-|---|---|---:|---:|---:|---:|---:|---:|
-| BTC HODL | buy-and-hold | - | -18.48% | 41.24% | -0.2517 | -47.71% | - |
-| Minimum Variance | Simple | 7D | -7.48% | 33.14% | -0.0510 | -28.54% | 11.15% |
-| Equal Weight | Simple | 7D | -23.02% | 39.16% | -0.4172 | -36.94% | 14.00% |
-| Minimum Variance | Managed | 7D | -7.47% | 32.77% | -0.0548 | -28.44% | 10.99% |
-| Equal Weight | Managed | 7D | -22.12% | 38.93% | -0.3946 | -36.16% | 13.94% |
-| Minimum Variance | Simple | 14D | 29.51% | 40.56% | 0.7918 | -29.06% | 21.56% |
-| Equal Weight | Simple | 14D | 11.27% | 51.74% | 0.4543 | -35.68% | 27.57% |
-| Minimum Variance | Managed | 14D | 31.10% | 40.64% | 0.8187 | -29.59% | 21.16% |
-| Equal Weight | Managed | 14D | 8.54% | 51.76% | 0.4098 | -35.20% | 27.40% |
+| Strategy | Policy | Cycle | Total Return | Mean Monthly Return | Ann. Vol | Sharpe | MDD | Realized Risk |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Minimum Variance | Simple | 7D | -7.48% | -0.41% | 69.35% | -0.1059 | -28.54% | 48.39% |
+| Equal Weight | Simple | 7D | -23.02% | -1.75% | 81.86% | -0.8662 | -36.94% | 60.78% |
+| Minimum Variance | Managed | 7D | -7.47% | -0.40% | 68.57% | -0.1137 | -28.44% | 47.70% |
+| Equal Weight | Managed | 7D | -22.12% | -1.67% | 81.39% | -0.8193 | -36.16% | 60.53% |
+| Minimum Variance | Simple | 14D | 29.51% | 2.52% | 59.78% | 1.1659 | -29.06% | 46.79% |
+| Equal Weight | Simple | 14D | 11.27% | 1.45% | 76.31% | 0.6685 | -35.68% | 59.84% |
+| Minimum Variance | Managed | 14D | 31.10% | 2.62% | 59.89% | 1.2056 | -29.59% | 45.93% |
+| Equal Weight | Managed | 14D | 8.54% | 1.26% | 76.35% | 0.6029 | -35.20% | 59.47% |
 
-14D Managed Mode에서 minimum variance portfolio는 31.10%의 total return을 기록한 반면, equal-weight는 8.54%에 그쳤다. Annualized volatility도 40.64%로 equal-weight의 51.76%보다 낮았고, max drawdown은 -29.59%로 equal-weight의 -35.20%보다 작았다. 이는 minimum variance 방식이 동일 universe 내에서 위험을 줄이면서 성과도 개선한 사례로 해석할 수 있다.
+14D Managed Mode에서 minimum variance portfolio는 31.10%의 active hold-window total return을 기록한 반면, equal-weight는 8.54%에 그쳤다. Annualized volatility도 59.89%로 equal-weight의 76.35%보다 낮았고, max drawdown은 -29.59%로 equal-weight의 -35.20%보다 작았다. 이는 minimum variance 방식이 동일 universe 내에서 변동성 노출을 줄이면서 성과도 개선한 사례로 해석할 수 있다.
 
 7D 전략에서는 minimum variance와 equal-weight 모두 total return이 음수였지만, minimum variance의 손실폭과 drawdown이 더 작았다. 따라서 7D 결과는 수익률 우수성보다 downside control 측면에서 의미가 있다.
 
@@ -543,12 +542,12 @@ Diebold-Mariano test 결과도 이러한 해석을 뒷받침한다.
 
 | Policy | Cycle | Mean Loss Diff | DM Stat | p-value |
 |---|---:|---:|---:|---:|
-| Simple | 7D | -0.000119 | -1.765 | 0.0776 |
-| Managed | 7D | -0.000121 | -1.885 | 0.0594 |
-| Simple | 14D | -0.000282 | -2.823 | 0.0048 |
-| Managed | 14D | -0.000280 | -2.897 | 0.0038 |
+| Simple | 7D | -0.000517 | -1.826 | 0.0678 |
+| Managed | 7D | -0.000524 | -1.967 | 0.0492 |
+| Simple | 14D | -0.000611 | -2.966 | 0.0030 |
+| Managed | 14D | -0.000609 | -3.050 | 0.0023 |
 
-14D에서는 p-value가 1% 미만으로 나타나, minimum variance의 squared daily return loss가 equal-weight보다 낮다는 통계적 근거가 비교적 강하다. 7D에서는 p-value가 5%보다 크지만 10% 수준에서는 의미 있는 결과로 해석할 여지가 있다.
+14D에서는 p-value가 1% 미만으로 나타나, active hold-window 기준 minimum variance의 squared daily return loss가 equal-weight보다 낮다는 통계적 근거가 비교적 강하다. 7D에서는 Managed Mode가 5% 수준에서, Simple Mode가 10% 수준에서 유의한 위험 손실 감소를 보인다.
 
 ### 5.9 한계
 
@@ -716,7 +715,7 @@ Simple Mode는 "월간 모델 포트폴리오" 또는 "월초 리밸런싱 전�
 
 ### 7.4 Managed Mode
 
-Managed Mode는 hold window 내부에서 매일 target weight로 리밸런싱하는 방식이다. 이는 목표 포트폴리오 비중을 더 적극적으로 유지하기 때문에 위험관리 측면에서 유리할 수 있다. 실제 실험에서도 14D Managed Mode는 31.10% total return, 40.64% annualized volatility, -29.59% MDD를 기록하며 가장 설득력 있는 결과를 보였다.
+Managed Mode는 hold window 내부에서 매일 target weight로 리밸런싱하는 방식이다. 이는 목표 포트폴리오 비중을 더 적극적으로 유지하기 때문에 위험관리 측면에서 유리할 수 있다. 실제 실험에서도 14D Managed Mode는 31.10% active hold-window total return, 59.89% annualized volatility, -29.59% MDD를 기록하며 가장 설득력 있는 결과를 보였다.
 
 그러나 Managed Mode는 거래 횟수가 많다. 14D Managed Mode의 turnover action count는 182회로, Simple Mode의 13회보다 훨씬 높다. 따라서 실제 운용에서는 거래비용과 슬리피지를 반영한 후 Managed Mode를 headline product로 삼을지 판단해야 한다.
 
@@ -862,7 +861,7 @@ F블록체인 리서치펌 연구원 인터뷰에서는 디지털자산 시장�
 
 본 연구는 국내 디지털자산 시장의 신규 유입 둔화와 공모형 상품 부재 문제를 배경으로, 고빈도 변동성 행렬 기반 포트폴리오 조성 시스템을 제안하였다. Upbit KRW 마켓의 1분봉 데이터를 이용하여 50개 유동성 자산을 선정하고, PRVM으로 일별 변동성 행렬을 추정하였다. 이후 EWMA로 covariance matrix를 예측하고, lagged jump volatility를 반영한 minimum variance portfolio를 산출하였다.
 
-실험에서는 uncapped portfolio의 concentration risk를 확인한 뒤, 25% single-asset cap을 적용한 monthly model portfolio를 최종 후보로 설정하였다. 14D Managed Mode는 동일 50개 자산 equal-weight 대비 높은 total return, 낮은 annualized volatility, 낮은 MDD를 기록하였다. DM test에서도 14D 전략은 squared daily return loss 기준으로 equal-weight 대비 유의한 개선을 보였다.
+실험에서는 uncapped portfolio의 concentration risk를 확인한 뒤, 25% single-asset cap을 적용한 monthly model portfolio를 최종 후보로 설정하였다. 14D Managed Mode는 동일 50개 자산 equal-weight 대비 높은 active hold-window total return, 낮은 annualized volatility, 낮은 MDD를 기록하였다. DM test에서도 14D 전략은 active hold-window squared daily return loss 기준으로 equal-weight 대비 유의한 개선을 보였다.
 
 ### 10.2 주요 결론
 
@@ -943,15 +942,15 @@ F블록체인 리서치펌 연구원 인터뷰에서는 디지털자산 시장�
 | PRVM | jump_alpha_u | 0.235 |
 | PSD | eigenvalue floor | 1e-10 |
 | EWMA | lambda | 0.94 |
-| EWMA | init days | 28 |
+| EWMA | rolling window days | 28 |
 | Portfolio | single-asset cap | 25% |
 | Portfolio | min asset weight | 0.1% |
 | Backtest | annualization | 365 |
 | Backtest | evaluation frequency | 10 minutes |
 
-### Appendix E. 백테스트 성과표
+### Appendix E. Active Hold-Window 백테스트 성과표
 
-> [삽입 예정] `data/processed/phase6_monthly_cap25/phase6_performance_table.csv` 전체 표.
+> [삽입 예정] `data/processed/phase6_monthly_cap25/phase6_performance_table.csv` active hold-window 성과표.
 
 ### Appendix F. 대시보드 화면 캡처
 

@@ -15,7 +15,7 @@ Matrix-valued EWMA (직전일 jump volatility 가산)
    ↓
 Long-only Minimum Variance Portfolio (LO-MVP)
    ↓
-Walk-forward 백테스팅 (1주 / 2주 cycle)
+Monthly 7D / 14D hold-window 백테스팅
 ```
 
 논문(`docs/references/FIVAR_Revision.pdf`, Shin et al. 2025)의 PRVM + portfolio 부분을 따르되, FIVAR / POET / Clustering은 제외한 단순화 버전.
@@ -156,17 +156,19 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 - **JV_{d-1}**: 직전일 jump volatility를 다음날 jump 예측으로 사용 (논문 그대로)
 
 ### 단일종목 cap
-- **없음** (논문 일관). 결과 보고 재검토 가능.
+- 논문 일관성 확인을 위한 uncapped variant와 상품화 가능성을 위한 **25% cap variant**를 모두 산출한다.
+- Dashboard와 최종 데모는 concentration risk를 통제한 monthly cap25 variant를 기본으로 사용한다.
 
-### 운용 cycle
-| Cycle | Train | Forecast | Hold | OOS 횟수 |
-|-------|-------|----------|------|----------|
-| **1주** | [d−28, d−1] | d | [d, d+7) | ~52 |
-| **2주** | [d−28, d−1] | d | [d, d+14) | ~26 |
+### 월초 단기 상품 운용 구조
+| Window | Forecast 기준 | Hold | 운용 가정 |
+|-------|----------|------|----------|
+| **7D** | 매월 첫 available date의 직전 28일 PRVM | 월초 7일 | 동일 초기 AUM으로 새 상품 시작 |
+| **14D** | 매월 첫 available date의 직전 28일 PRVM | 월초 14일 | 동일 초기 AUM으로 새 상품 시작 |
 
-- 두 cycle 동시 운용
-- Hold 기간 내 리밸런싱 없음 (weight drift 허용)
-- Multi-step forecast 불필요 (EWMA = random walk → k-step ahead = 1-step ahead)
+- 7D / 14D 상품을 동시에 평가한다.
+- **Simple Mode**: 월초 target weight로 진입한 뒤 hold window 동안 weight drift를 허용한다.
+- **Managed Mode**: hold window 동안 매일 target weight로 되돌리는 일 단위 리밸런싱을 수행한다.
+- 각 월은 동일한 초기 AUM으로 시작하는 독립 상품으로 해석하며, off-window 날짜는 성과표에 포함하지 않는다.
 
 ### 거래비용
 - **무시** (펀드 컨셉 시연 단계)
@@ -184,23 +186,23 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 | 항목 | 정의 |
 |------|------|
 | Realized portfolio risk | $\sqrt{\sum_{k=1}^{144} (\omega^\top \Delta Y_{d,k}^{10\text{-min}})^2}$, 연환산 × √365 |
-| Annualized return | KRW close-to-close 기준 |
-| Sharpe ratio | r_f = 0 가정 |
-| Max drawdown | |
-| Calmar ratio | return / |MDD| |
-| Turnover | cycle별 \|Δω\| 평균 |
-| Information ratio | vs BTC HODL |
+| Total return on hold windows | 각 월 7D / 14D active hold-window 일별 수익률을 연결한 복리 수익률 |
+| Mean monthly hold return | 월별 독립 상품 수익률의 단순 평균 |
+| Annualized return / volatility | active hold-window 일별 수익률만 사용, 365일 기준 연환산 |
+| Sharpe ratio | active hold-window 일별 수익률, r_f = 0 가정 |
+| Max drawdown | active hold-window equity curve 기준 |
+| Positive month rate | 월별 상품 수익률이 양수인 월 비율 |
 
 - **연환산**: √365 (24/7 거래)
 - **평가 frequency**: 10분 portfolio return (1분은 microstructure noise 큼, 논문 p.32 그대로)
 - 하루 144 = 1440 / 10 구간
 
 ### Benchmark
-1. **BTC HODL**: 2025-03-01에 BTC 100% 매수 후 EOP까지 보유
-2. **Equal-weight (EW)**: minimum variance portfolio와 동일한 50종목, 동일 cycle/리밸런싱 규칙
+1. **Equal-weight (EW)**: minimum variance portfolio와 동일한 50종목, 동일 cycle/리밸런싱 규칙
+2. **BTC same-window return**: 월별 hold-window 수익률 표에서 시장 reference로만 사용
 
 ### 통계적 검정
-- **Diebold-Mariano test**: forecast loss differential. 1주 cycle (n≈52) 결과로 검정력 확보.
+- **Diebold-Mariano test**: active hold-window의 squared daily return loss를 사용해 minimum variance와 equal-weight의 realized risk 차이를 검정한다.
 
 ### Sanity check 자동화
 - PRVM_d trace 시계열 (총 분산 spike 검출)
@@ -208,11 +210,11 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 - Minimum variance portfolio ω의 max(|ω|) 시계열 → 단일종목 cap 도입 여부 판단 근거
 
 ### 산출물
-- Equity curve (cycle별)
-- Drawdown chart
+- Hold-window equity curve (cycle / mode별)
+- Hold-window drawdown chart
 - Risk vs benchmark 비교 차트
-- 평가 테이블 (논문 Table 2 형식)
-- DM test 결과
+- active hold-window 평가 테이블
+- active hold-window DM test 결과
 - Final report
 
 ---

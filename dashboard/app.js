@@ -153,7 +153,7 @@ function renderKpis() {
   els.kpiTotalReturn.textContent = percent(perf?.total_return);
   els.kpiTotalReturnHint.textContent = context.inHoldWindow
     ? `${state.cycle}D ${selected.label} · ${shortDate(context.holdStart)} to ${shortDate(context.selectedDate)}`
-    : "Off-window cash";
+    : "No active monthly product";
   els.kpiSharpe.textContent = decimal(perf?.sharpe_ratio, 3);
   els.kpiMdd.textContent = percent(perf?.max_drawdown);
   els.kpiVol.textContent = percent(perf?.annualized_volatility);
@@ -292,7 +292,7 @@ function drawDrawdownChart(container, values) {
 function drawMonthlyChart() {
   const context = selectedWindowContext();
   if (!context.inHoldWindow || !context.holdStart) {
-    drawEmptyChart(els.monthlyChart, "Monthly history is hidden outside active hold windows.");
+    drawEmptyChart(els.monthlyChart, "Monthly product history is hidden outside active hold windows.");
     return;
   }
   const cutoffMonth = context.holdStart.slice(0, 7);
@@ -315,7 +315,7 @@ function drawMonthlyChart() {
     .flatMap((month) => [byMonth.get(month).minimum_variance, byMonth.get(month).equal_weight, byMonth.get(month).btc_hodl])
     .filter(Number.isFinite);
   if (!months.length || !values.length) {
-    drawEmptyChart(els.monthlyChart, "No completed prior monthly hold windows yet.");
+    drawEmptyChart(els.monthlyChart, "No completed prior monthly products yet.");
     return;
   }
   const { width, height } = chartSize(els.monthlyChart, 900, 260);

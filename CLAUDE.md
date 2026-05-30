@@ -87,15 +87,15 @@ PSD_FLOOR         = 1e-10
 
 # === EWMA ===
 LAMBDA            = 0.94           # RiskMetrics 표준
-WINDOW            = 28             # EWMA 초기값 산출 기간
-EWMA_INIT_DAYS    = 28             # 초기값 sample mean 일수
+WINDOW            = 28             # EWMA rolling window 기간
+EWMA_INIT_DAYS    = 28             # 각 target date 직전 28일만 사용
 
 # === Portfolio ===
 MIN_VAR_C0        = 1              # gross exposure (long-only)
 SINGLE_ASSET_CAP  = None           # 결과 보고 재검토
 
 # === Backtest ===
-CYCLES            = [7, 14]        # 1주, 2주 동시 운용
+CYCLES            = [7, 14]        # 월초 7D / 14D 단기 상품 동시 평가
 EVAL_FREQ_MIN     = 10             # 평가용 frequency
 EVAL_INTERVALS    = 144            # 1440 / 10
 ANNUALIZATION     = 365            # 24/7 거래
@@ -118,7 +118,7 @@ Phase 4 (EWMA)
 Phase 5 (Portfolio)
    ↓ cycle별 ω weight 시계열
 Phase 6 (Backtest)
-   ↓ equity curve, metrics 테이블, DM test
+   ↓ active hold-window metrics 테이블, DM test
 ```
 
 각 Phase는 **독립 실행 가능**해야 한다 (산출물은 디스크에 저장하고 다음 Phase가 read).
