@@ -196,7 +196,7 @@ $$\min_\omega \omega^\top (\hat{\Sigma}_{d+1|d} + \widehat{JV}_{d-1}) \omega \qu
 - **연환산**: √365 (24/7 거래)
 - **평가 frequency**: 10분 portfolio return (1분은 microstructure noise 큼, 논문 p.32 그대로)
 - 하루 144 = 1440 / 10 구간
-- **Dashboard 표시 원칙**: drawdown chart와 volatility KPI를 분리한다. Sharpe KPI는 선택 날짜의 짧은 partial window가 아니라 Phase 6 active hold-window 전체 성과표를 사용해 짧은 샘플의 연율화 왜곡을 피한다.
+- **Dashboard 표시 원칙**: drawdown chart와 volatility KPI를 분리한다. Sharpe KPI는 선택 날짜의 짧은 partial window가 아니라 Phase 6 active hold-window 전체 성과표를 사용해 짧은 샘플의 연율화 왜곡을 피한다. AUM 입력값은 매월 상품의 시작 원금인 Entry AUM으로 고정하고, 날짜별 평가금액은 Current AUM으로 별도 표시한다.
 
 ### Benchmark
 1. **Equal-weight (EW)**: minimum variance portfolio와 동일한 50종목, 동일 cycle/리밸런싱 규칙

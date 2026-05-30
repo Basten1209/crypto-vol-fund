@@ -27,6 +27,8 @@ function cacheElements() {
     "selectedDate",
     "windowStatus",
     "aumInput",
+    "currentAumReadout",
+    "currentAumHint",
     "kpiTotalReturn",
     "kpiTotalReturnHint",
     "kpiSharpe",
@@ -72,6 +74,7 @@ function initializeControls() {
   els.aumInput.addEventListener("input", () => {
     const raw = parseAum();
     els.aumInput.value = formatInteger(raw);
+    renderAumReadout();
     renderOrders();
   });
 
@@ -122,10 +125,29 @@ function jumpToNextRebalance() {
 
 function render() {
   updateControlState();
+  renderAumReadout();
   renderKpis();
   renderCharts();
   renderHoldings();
   renderOrders();
+}
+
+function renderAumReadout() {
+  const selected = snapshotForDate(selectedDate()).policy;
+  const entryAum = parseAum();
+  const currentAum = entryAum * (selected.current_aum_multiplier ?? 1);
+  const currentReturn = selected.current_aum_multiplier != null ? selected.current_aum_multiplier - 1 : Number.NaN;
+
+  if (selected.in_hold_window) {
+    els.currentAumReadout.textContent = `Current AUM ${krw(currentAum)}`;
+    els.currentAumHint.textContent = `Entry ${krw(entryAum)} · return to date ${signedPercent(currentReturn)}`;
+  } else if (selected.is_exit_day) {
+    els.currentAumReadout.textContent = `Exit AUM ${krw(currentAum)}`;
+    els.currentAumHint.textContent = `Entry ${krw(entryAum)} · final window return ${signedPercent(currentReturn)}`;
+  } else {
+    els.currentAumReadout.textContent = "No active product";
+    els.currentAumHint.textContent = `Next monthly product starts from ${krw(entryAum)}`;
+  }
 }
 
 function updateControlState() {

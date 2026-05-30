@@ -352,7 +352,7 @@ Digital Asset, Public Fund, Volatility Matrix, PRVM, EWMA, Minimum Variance Port
 - demo date slider
 - 7D / 14D cycle selector
 - Simple / Managed mode selector
-- AUM input
+- Entry AUM input and date-specific Current AUM readout
 - KPI cards: total return, 전체 active hold-window Sharpe, MDD, annualized volatility, active assets
 - performance chart
 - drawdown chart
