@@ -70,7 +70,7 @@
         <article class="metric">
           <span>Sharpe</span>
           <strong id="kpiSharpe">-</strong>
-          <small id="kpiSharpeHint">r_f = 0</small>
+          <small id="kpiSharpeHint">Active windows · r_f = 0</small>
         </article>
         <article class="metric">
           <span>Max drawdown</span>
@@ -80,13 +80,28 @@
         <article class="metric">
           <span>Ann. volatility</span>
           <strong id="kpiVol">-</strong>
-          <small id="kpiRisk">Realized risk -</small>
+          <small id="kpiRisk">Daily σ × √365</small>
         </article>
         <article class="metric">
           <span>Active assets</span>
           <strong id="kpiActive">-</strong>
           <small id="kpiTop">Top weight -</small>
         </article>
+      </section>
+
+      <section class="metric-notes" aria-label="Metric explanations">
+        <div>
+          <strong>Drawdown</strong>
+          <span>아래 차트는 변동성 자체가 아니라, 선택된 월간 상품의 고점 대비 하락률 경로를 보여줍니다.</span>
+        </div>
+        <div>
+          <strong>Ann. volatility</strong>
+          <span>active hold-window 일별 수익률 표준편차를 365일 기준으로 연율화한 값입니다. 1%p 상승은 수익률이 아니라 연율화된 산포가 1%p 커졌다는 뜻입니다.</span>
+        </div>
+        <div>
+          <strong>Sharpe</strong>
+          <span>선택 날짜의 짧은 partial window가 아니라 Phase 6 전체 active hold-window 성과표 기준으로 표시합니다.</span>
+        </div>
       </section>
 
       <section class="dashboard-main">
@@ -109,8 +124,8 @@
         <section class="panel panel--risk">
           <div class="panel-head">
             <div>
-              <h2>Volatility</h2>
-              <p>Current hold window through selected date</p>
+              <h2>Drawdown</h2>
+              <p>Peak-to-trough path through selected date</p>
             </div>
           </div>
           <div id="drawdownChart" class="chart chart--small" role="img" aria-label="Drawdown chart"></div>

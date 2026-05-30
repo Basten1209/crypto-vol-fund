@@ -30,7 +30,9 @@ function cacheElements() {
     "kpiTotalReturn",
     "kpiTotalReturnHint",
     "kpiSharpe",
+    "kpiSharpeHint",
     "kpiMdd",
+    "kpiMddHint",
     "kpiVol",
     "kpiRisk",
     "kpiActive",
@@ -150,14 +152,19 @@ function renderKpis() {
   const selected = context.policySnapshot;
   const mvWindow = windowSeries("minimum_variance", state.policy, state.cycle, context);
   const perf = performanceFromWindow(mvWindow);
+  const aggregatePerf = aggregatePerformance("minimum_variance");
   els.kpiTotalReturn.textContent = percent(perf?.total_return);
   els.kpiTotalReturnHint.textContent = context.inHoldWindow
     ? `${state.cycle}D ${selected.label} · ${shortDate(context.holdStart)} to ${shortDate(context.selectedDate)}`
     : "No active monthly product";
-  els.kpiSharpe.textContent = decimal(perf?.sharpe_ratio, 3);
+  els.kpiSharpe.textContent = decimal(aggregatePerf?.sharpe_on_invested_days, 3);
+  els.kpiSharpeHint.textContent = aggregatePerf
+    ? `${aggregatePerf.invested_days} invested days · r_f=0`
+    : "Active windows · r_f=0";
   els.kpiMdd.textContent = percent(perf?.max_drawdown);
+  els.kpiMddHint.textContent = context.inHoldWindow ? "Selected product path" : "No active product";
   els.kpiVol.textContent = percent(perf?.annualized_volatility);
-  els.kpiRisk.textContent = `Realized risk ${percent(perf?.realized_risk_annualized_mean)}`;
+  els.kpiRisk.textContent = perf?.return_count >= 2 ? "Daily σ × √365" : "Need 2 daily returns";
   els.kpiActive.textContent = selected.active_count ? String(selected.active_count) : "Cash";
   els.kpiTop.textContent = `Top weight ${percent(selected.top_weight)}`;
   els.capBadge.textContent = selected.top_weight <= state.data.metadata.single_asset_cap + 0.000001 ? "Cap OK" : "Cap breach";
@@ -411,6 +418,14 @@ function series(strategy, policy, cycle) {
   return state.data.daily_series[`${strategy}|${policy}|${cycle}`] || [];
 }
 
+function aggregatePerformance(strategy) {
+  return (state.data.performance || []).find((row) => {
+    return row.strategy === strategy
+      && row.rebalance_policy === state.policy
+      && Number(row.cycle_days) === Number(state.cycle);
+  }) || null;
+}
+
 function windowSeries(strategy, policy, cycle, context) {
   if (!context.inHoldWindow || !context.holdStart) return [];
   const rows = series(strategy, policy, cycle).filter((row) => {
@@ -435,11 +450,10 @@ function performanceFromWindow(rows) {
   const equity = rows.map((row) => row.equity).filter(Number.isFinite);
   const risks = rows.map((row) => row.realized_risk_annualized).filter(Number.isFinite);
   const volatility = returns.length >= 2 ? sampleStd(returns) * Math.sqrt(365) : Number.NaN;
-  const returnStd = returns.length >= 2 ? sampleStd(returns) : Number.NaN;
   return {
     total_return: equity.length ? equity[equity.length - 1] - 1 : Number.NaN,
     annualized_volatility: volatility,
-    sharpe_ratio: returns.length >= 2 && returnStd > 0 ? (mean(returns) / returnStd) * Math.sqrt(365) : Number.NaN,
+    return_count: returns.length,
     max_drawdown: equity.length ? Math.min(...localDrawdowns(equity)) : Number.NaN,
     realized_risk_annualized_mean: risks.length ? mean(risks) : Number.NaN,
   };
