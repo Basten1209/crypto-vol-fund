@@ -303,21 +303,20 @@ Jump volatility는 다음날 포트폴리오 목적함수에 포함된다. 이�
 
 ### 4.4 EWMA 변동성 예측
 
-EWMA 변동성 예측 단계에서는 PRVM으로 산출한 일별 covariance matrix에 EWMA를 적용한다. 초기값은 2025-02-01부터 2025-02-28까지 28일 PRVM의 단순 평균이다. 이후 2025-03-01을 첫 target date로 하여 recursive forecast를 생성한다.
+EWMA 변동성 예측 단계에서는 PRVM으로 산출한 일별 covariance matrix에 rolling 28-day EWMA를 적용한다. 2025-03-01을 첫 target date로 두고, 직전 28일(2025-02-01부터 2025-02-28까지)의 PRVM에 지수감쇠 가중치를 적용해 익일 변동성 행렬을 예측한다. 이후 각 target date마다 window를 하루씩 전진시키며, 29일 이전 데이터는 해당 forecast에서 제외한다.
 
 > [Formula] Matrix-valued EWMA
 >
 > $$
 > \widehat{\Sigma}_{d+1|d}
 > =
-> (1-\lambda)\widehat{\Gamma}_d
-> +
-> \lambda \widehat{\Sigma}_{d|d-1}
+> \frac{\sum_{\ell=0}^{27}\lambda^\ell \widehat{\Gamma}_{d-\ell}}
+> {\sum_{\ell=0}^{27}\lambda^\ell}
 > $$
 >
 > 본 연구에서는 $\lambda = 0.94$를 사용한다.
 
-EWMA의 입력인 PRVM은 PSD projection을 거친 대칭 행렬이며, EWMA 갱신식은 두 PSD 행렬의 convex combination이다. 따라서 이론적으로는 PSD 성질이 보존된다. 다만 수치 계산 과정에서 비대칭 오차나 아주 작은 음의 eigenvalue가 발생할 수 있으므로, 초기 EWMA 행렬과 매일의 recursive update 이후에 다시 PSD projection을 적용한다. PSD projection은 (1) $(M+M^\top)/2$로 행렬을 대칭화하고, (2) eigenvalue를 `1e-10` 이상으로 floor한 뒤, (3) 재구성된 행렬을 다시 대칭화하는 절차이다. 따라서 symmetry error가 0으로 확인되는 것은 EWMA 구조뿐 아니라 이 PSD projection 절차의 결과이기도 하다.
+EWMA의 입력인 PRVM은 PSD projection을 거친 대칭 행렬이며, rolling EWMA forecast는 PSD 행렬들의 정규화된 가중평균이다. 따라서 이론적으로는 PSD 성질이 보존된다. 다만 수치 계산 과정에서 비대칭 오차나 아주 작은 음의 eigenvalue가 발생할 수 있으므로, 각 rolling forecast 이후에 다시 PSD projection을 적용한다. PSD projection은 (1) $(M+M^\top)/2$로 행렬을 대칭화하고, (2) eigenvalue를 `1e-10` 이상으로 floor한 뒤, (3) 재구성된 행렬을 다시 대칭화하는 절차이다. 따라서 symmetry error가 0으로 확인되는 것은 EWMA 구조뿐 아니라 이 PSD projection 절차의 결과이기도 하다.
 
 EWMA 예측 단계에서는 jump-adjusted PRVM을 입력으로 사용하는 방식과 raw PRVM, 즉 jump adjustment를 적용하지 않은 단순 PRVM을 입력으로 사용하는 방식을 함께 비교한다. 두 예측모형은 모두 동일한 다음 날 jump-adjusted PRVM을 target matrix로 두고 평가한다. 이 비교는 jump adjustment가 단순한 전처리 절차가 아니라, 다음 날 변동성 행렬 예측의 안정성을 개선하는지 검증하기 위한 것이다.
 

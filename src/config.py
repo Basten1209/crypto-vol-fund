@@ -7,7 +7,7 @@ import numpy as np
 # === 데이터 ===
 START_DATE        = "2025-02-01"       # 데이터 다운로드 시작일
 END_DATE          = "2026-03-31"       # 데이터 다운로드 종료일
-ANALYSIS_START    = "2025-03-01"       # 분석 시작일 (EWMA 초기화 후)
+ANALYSIS_START    = "2025-03-01"       # 분석 시작일 (28일 EWMA rolling window 이후)
 DAILY_CUT_KST     = "09:00"           # 일봉 구분 기준 (KST)
 N_ASSETS          = 50                 # 선정 종목 수
 EXCLUDE_STABLE    = True               # 스테이블코인 제외 여부
@@ -28,8 +28,8 @@ PSD_FLOOR         = 1e-10             # eigenvalue floor (QLIKE log det 용)
 
 # === EWMA ===
 LAMBDA_           = 0.94              # RiskMetrics 표준 (lambda는 Python 예약어)
-WINDOW            = 28                # EWMA 초기값 산출 기간 (days)
-EWMA_INIT_DAYS    = 28               # 초기값 계산용 일수
+WINDOW            = 28                # EWMA rolling window 기간 (days)
+EWMA_INIT_DAYS    = 28               # EWMA rolling window 일수
 
 # === Portfolio ===
 MIN_VAR_C0        = 1                 # gross exposure (long-only)

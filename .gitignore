@@ -3,6 +3,7 @@ price_panel.csv
 src/phase1_data/raw/
 src/phase1_data/price_panel.csv
 data/processed/phase3/*_long.csv
+data/processed/demo_phase3_to_6/
 
 # Python
 __pycache__/

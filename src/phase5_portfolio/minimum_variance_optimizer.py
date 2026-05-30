@@ -718,6 +718,11 @@ def _optimize_cycle(
     weights = np.empty((len(rebalance_indices), len(tickers)), dtype=np.float64)
     rows: list[dict[str, Any]] = []
     previous_weights: np.ndarray | None = None
+    total_rebalances = len(rebalance_indices)
+    print(
+        f"Phase 5 progress: cycle={cycle_days}d optimizing {total_rebalances} rebalance(s)",
+        flush=True,
+    )
 
     for out_idx, forecast_idx in enumerate(rebalance_indices):
         solved = solve_long_only_minimum_variance(objective_matrices[forecast_idx], params=params)
@@ -728,6 +733,15 @@ def _optimize_cycle(
         hold_end_idx = min(forecast_idx + cycle_days, len(target_dates)) - 1
         turnover = float(np.sum(np.abs(weight - previous_weights))) if previous_weights is not None else 0.0
         previous_weights = weight
+        completed = out_idx + 1
+        if completed == 1 or completed % 10 == 0 or completed == total_rebalances:
+            pct = completed / total_rebalances * 100.0
+            print(
+                f"Phase 5 progress: cycle={cycle_days}d {completed}/{total_rebalances} "
+                f"({pct:.1f}%), rebalance={target_dates[forecast_idx]}, "
+                f"top={tickers[top_idx]} {weight[top_idx]:.2%}",
+                flush=True,
+            )
 
         rows.append(
             {

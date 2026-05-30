@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
         "--init-days",
         type=int,
         default=config.EWMA_INIT_DAYS,
-        help=f"Number of initial PRVM days to average. Default: {config.EWMA_INIT_DAYS}",
+        help=f"Rolling EWMA window length in days. Default: {config.EWMA_INIT_DAYS}",
     )
     parser.add_argument(
         "--analysis-start",
@@ -123,6 +123,8 @@ def run_comparison(
         {
             "target_date": adjusted["target_dates"],
             "origin_date": adjusted["origin_dates"],
+            "window_start_date": adjusted["window_start_dates"],
+            "window_end_date": adjusted["window_end_dates"],
             "adjusted_mspe": adjusted["mspe"],
             "raw_mspe": raw["mspe"],
             "mspe_delta_raw_minus_adjusted": raw["mspe"] - adjusted["mspe"],

@@ -1,4 +1,4 @@
-"""Recursive seeded matrix EWMA forecast for Phase 4.
+"""Rolling-window matrix EWMA forecast for Phase 4.
 
 This module consumes the compact Phase 3 ``prvm_results.npz`` artifact. It does
 not read the large 1-minute price panel.
@@ -35,9 +35,10 @@ class EWMAParams:
         return {
             "lambda": self.lambda_,
             "init_days": self.init_days,
+            "window_days": self.init_days,
             "analysis_start": self.analysis_start,
             "psd_floor": self.psd_floor,
-            "method": "recursive_seeded_riskmetrics_ewma",
+            "method": "rolling_window_exponentially_weighted_ewma",
         }
 
 
@@ -49,6 +50,7 @@ def compute_ewma_forecasts(
     params: EWMAParams | None = None,
     input_matrix_key: str = "prvm",
     ground_truth_matrix_key: str = "prvm",
+    show_progress: bool = False,
 ) -> dict[str, Any]:
     """Compute daily EWMA forecasts from Phase 3 realized-volatility arrays."""
     params = params or EWMAParams()
@@ -58,23 +60,29 @@ def compute_ewma_forecasts(
 
     date_strings = np.asarray(dates, dtype="U10")
     target_start_idx = int(np.where(date_strings == params.analysis_start)[0][0])
-    init_start_idx = target_start_idx - params.init_days
-    init_slice = slice(init_start_idx, target_start_idx)
-
-    init_dates = date_strings[init_slice]
+    first_window_slice = slice(target_start_idx - params.init_days, target_start_idx)
+    init_dates = date_strings[first_window_slice]
     target_dates = date_strings[target_start_idx:]
     origin_dates = date_strings[target_start_idx - 1 : -1]
+    window_start_dates = date_strings[target_start_idx - params.init_days : len(date_strings) - params.init_days]
+    window_end_dates = origin_dates
     ground_truth = np.asarray(ground_truth_matrices[target_start_idx:], dtype=np.float64)
 
-    current_forecast = project_psd(np.mean(input_matrices[init_slice], axis=0), floor=params.psd_floor)
     forecasts = np.empty_like(ground_truth, dtype=np.float64)
+    weights = _rolling_ewma_weights(params.init_days, params.lambda_)
 
-    for out_idx, source_idx in enumerate(range(target_start_idx, len(date_strings))):
-        forecasts[out_idx] = current_forecast
-        current_forecast = project_psd(
-            (1.0 - params.lambda_) * input_matrices[source_idx] + params.lambda_ * current_forecast,
-            floor=params.psd_floor,
-        )
+    total_forecasts = len(target_dates)
+    for out_idx, target_idx in enumerate(range(target_start_idx, len(date_strings))):
+        window = input_matrices[target_idx - params.init_days : target_idx]
+        forecasts[out_idx] = project_psd(np.tensordot(weights, window, axes=(0, 0)), floor=params.psd_floor)
+        completed = out_idx + 1
+        if show_progress and (completed == 1 or completed % 50 == 0 or completed == total_forecasts):
+            pct = completed / total_forecasts * 100.0
+            print(
+                f"Phase 4 progress: forecast {completed}/{total_forecasts} ({pct:.1f}%), "
+                f"target={target_dates[out_idx]}, window={window_start_dates[out_idx]}..{window_end_dates[out_idx]}",
+                flush=True,
+            )
 
     mspe = calculate_daily_mspe(forecasts, ground_truth)
     qlike = calculate_daily_qlike(forecasts, ground_truth, floor=params.psd_floor)
@@ -83,6 +91,8 @@ def compute_ewma_forecasts(
         "dates": date_strings,
         "target_dates": target_dates,
         "origin_dates": origin_dates,
+        "window_start_dates": window_start_dates,
+        "window_end_dates": window_end_dates,
         "init_dates": init_dates,
         "tickers": np.asarray(tickers, dtype="U"),
         "forecasts": forecasts,
@@ -94,6 +104,14 @@ def compute_ewma_forecasts(
         "input_matrix_key": input_matrix_key,
         "ground_truth_matrix_key": ground_truth_matrix_key,
     }
+
+
+def _rolling_ewma_weights(window_days: int, lambda_: float) -> np.ndarray:
+    """Return normalized EWMA weights ordered from oldest to newest."""
+    lags_from_newest = np.arange(window_days - 1, -1, -1, dtype=np.float64)
+    weights = np.power(lambda_, lags_from_newest)
+    weights /= float(np.sum(weights))
+    return weights.astype(np.float64)
 
 
 def compute_phase4_ewma(
@@ -128,6 +146,7 @@ def compute_phase4_ewma(
         params=params,
         input_matrix_key=matrix_key,
         ground_truth_matrix_key=ground_truth_key,
+        show_progress=True,
     )
     report = _write_outputs(output_dir=output_dir, input_path=input_path, result=result)
 
@@ -138,7 +157,8 @@ def compute_phase4_ewma(
     print(f"input_matrix: {matrix_key}")
     print(f"ground_truth_matrix: {ground_truth_key}")
     print(f"lambda: {params.lambda_}")
-    print(f"init_dates: {result['init_dates'][0]} to {result['init_dates'][-1]}")
+    print(f"rolling_window_days: {params.init_days}")
+    print(f"first_window: {result['window_start_dates'][0]} to {result['window_end_dates'][0]}")
     print(f"target_dates: {result['target_dates'][0]} to {result['target_dates'][-1]}")
     print(f"forecast_shape: {tuple(result['forecasts'].shape)}")
     print(f"mean_mspe_x1e4: {report['metrics_summary']['mean_mspe_x1e4']:.6g}")
@@ -166,7 +186,7 @@ def _validate_inputs(
     if not (0.0 < params.lambda_ < 1.0):
         raise ValueError("lambda must be between 0 and 1")
     if params.init_days < 1:
-        raise ValueError("init_days must be >= 1")
+        raise ValueError("window/init days must be >= 1")
     if matrices.ndim != 3 or matrices.shape[1] != matrices.shape[2]:
         raise ValueError(f"Expected {label} shape (days, assets, assets), got {matrices.shape}")
     if len(dates) != matrices.shape[0]:
@@ -183,7 +203,7 @@ def _validate_inputs(
     target_start_idx = int(matches[0])
     if target_start_idx < params.init_days:
         raise ValueError(
-            f"Need {params.init_days} initialization days before {params.analysis_start}, "
+            f"Need {params.init_days} rolling-window days before {params.analysis_start}, "
             f"got {target_start_idx}"
         )
 
@@ -200,6 +220,8 @@ def _write_outputs(output_dir: Path, input_path: Path, result: dict[str, Any]) -
         dates=result["dates"],
         target_dates=result["target_dates"],
         origin_dates=result["origin_dates"],
+        window_start_dates=result["window_start_dates"],
+        window_end_dates=result["window_end_dates"],
         tickers=result["tickers"],
         forecasts=result["forecasts"],
         ground_truth_matrix=result["ground_truth_matrix"],
@@ -214,6 +236,8 @@ def _write_outputs(output_dir: Path, input_path: Path, result: dict[str, Any]) -
         {
             "target_date": result["target_dates"],
             "origin_date": result["origin_dates"],
+            "window_start_date": result["window_start_dates"],
+            "window_end_date": result["window_end_dates"],
             "mspe": result["mspe"],
             "mspe_x1e4": result["mspe"] * 1e4,
             "qlike": result["qlike"],
@@ -249,6 +273,10 @@ def _write_outputs(output_dir: Path, input_path: Path, result: dict[str, Any]) -
         "n_forecast_days": int(len(result["target_dates"])),
         "first_init_date": str(result["init_dates"][0]),
         "last_init_date": str(result["init_dates"][-1]),
+        "first_window_start_date": str(result["window_start_dates"][0]),
+        "first_window_end_date": str(result["window_end_dates"][0]),
+        "last_window_start_date": str(result["window_start_dates"][-1]),
+        "last_window_end_date": str(result["window_end_dates"][-1]),
         "first_target_date": str(result["target_dates"][0]),
         "last_target_date": str(result["target_dates"][-1]),
         "sanity": sanity,

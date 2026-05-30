@@ -161,7 +161,7 @@ A: 24h × 60min = 1440. K = floor(√1440) ≈ 37 (Jacod et al. 2009 theoretical
 A: QLIKE 계산 시 log det(Σ) 필요. eigenvalue가 0이면 −∞ → numerical error.
 
 **Q: λ = 0.94 고정 이유?**
-A: RiskMetrics 표준. 첫 28일 PRVM 평균으로 초기화한 뒤 recursive EWMA로 매일 갱신한다. Effective sample length는 약 16.7일이다.
+A: RiskMetrics 표준. 각 target date마다 직전 28일 PRVM에 EWMA 가중치를 적용해 익일 변동성 행렬을 예측한다. 28일 이전 데이터는 해당 forecast에서 제외한다.
 
 **Q: 왜 stablecoin 제외?**
 A: USDT 등은 KRW 변동성이 BTC 대비 1/20 수준 → minimum variance portfolio가 stablecoin에 50%+ 몰아주어 "변동성 기반 펀드" 콘셉트 훼손.

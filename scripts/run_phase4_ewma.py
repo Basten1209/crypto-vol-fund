@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run Phase 4 recursive seeded EWMA forecasts from Phase 3 PRVM output."""
+"""Run Phase 4 rolling-window EWMA forecasts from Phase 3 PRVM output."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
         "--init-days",
         type=int,
         default=config.EWMA_INIT_DAYS,
-        help=f"Number of initial PRVM days to average. Default: {config.EWMA_INIT_DAYS}",
+        help=f"Rolling EWMA window length in days. Default: {config.EWMA_INIT_DAYS}",
     )
     parser.add_argument(
         "--analysis-start",

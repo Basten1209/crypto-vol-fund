@@ -423,6 +423,13 @@ def _write_outputs(
     return report
 
 
+def _progress_message(label: str, current: int, total: int | None, latest: str) -> str:
+    if total is None or total <= 0:
+        return f"{label} {current} day(s), latest={latest}"
+    pct = current / total * 100.0
+    return f"{label} {current}/{total} day(s) ({pct:.1f}%), latest={latest}"
+
+
 def compute_phase3_prvm(
     input_path: Path | str,
     output_dir: Path | str,
@@ -465,7 +472,10 @@ def compute_phase3_prvm(
             result = calculate_prvm_for_day(day, daily_returns, params)
             results.append(result)
             if len(results) == 1 or len(results) % 10 == 0:
-                print(f"computed {len(results)} day(s), latest={day}")
+                print(
+                    _progress_message("computed", len(results), limit_days, day),
+                    flush=True,
+                )
             return False
 
     else:
@@ -475,7 +485,10 @@ def compute_phase3_prvm(
             handles.append(pool.apply_async(_calculate_prvm_for_day_worker, ((day, daily_returns, params_dict),)))
             submitted = len(handles)
             if submitted == 1 or submitted % 25 == 0:
-                print(f"submitted {submitted} day(s), latest={day}")
+                print(
+                    _progress_message("submitted", submitted, limit_days, day),
+                    flush=True,
+                )
             return False
 
     try:
@@ -494,7 +507,10 @@ def compute_phase3_prvm(
                 results.append(handle.get())
                 if idx == 1 or idx % 25 == 0 or idx == len(handles):
                     latest = results[-1]["date"]
-                    print(f"collected {idx}/{len(handles)} result(s), latest={latest}")
+                    print(
+                        _progress_message("collected", idx, len(handles), latest),
+                        flush=True,
+                    )
             pool.join()
 
         print(f"full days submitted: {submitted_days}")

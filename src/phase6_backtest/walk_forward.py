@@ -44,12 +44,19 @@ def run_phase6_backtest(
     if not portfolio_path.exists():
         raise FileNotFoundError(portfolio_path)
 
+    print("Phase 6 progress: loading portfolio weights", flush=True)
     portfolios = _load_phase5_portfolios(portfolio_path)
+    print("Phase 6 progress: loading 10-minute evaluation returns", flush=True)
     returns = _load_eval_returns(
         price_panel_path=price_panel_path,
         tickers=portfolios["tickers"],
         eval_freq_min=eval_freq_min,
         required_dates=_required_dates(portfolios),
+    )
+    print(
+        f"Phase 6 progress: loaded {len(returns['dates'])} backtest day(s), "
+        f"{returns['dates'][0]} to {returns['dates'][-1]}",
+        flush=True,
     )
 
     backtests: list[pd.DataFrame] = []
@@ -66,6 +73,8 @@ def run_phase6_backtest(
         simple_returns=returns["simple_returns"],
         rebalance_dates=np.asarray([returns["dates"][0]], dtype="U10"),
         target_weights=single_asset_targets(np.asarray([returns["dates"][0]], dtype="U10"), portfolios["tickers"], "BTC"),
+        show_progress=True,
+        progress_label="btc_hodl",
     )
     btc_daily_returns = btc_result["daily"]["daily_return"].to_numpy(dtype=np.float64)
     backtests.append(btc_result["daily"])
@@ -104,6 +113,8 @@ def run_phase6_backtest(
                 scheduled_dates=cycle_data.get("scheduled_dates"),
                 scheduled_rebalance_dates=cycle_data.get("scheduled_rebalance_dates"),
                 scheduled_weights=cycle_data.get("scheduled_weights"),
+                show_progress=True,
+                progress_label=f"minimum_variance cycle={cycle}d policy={rebalance_policy}",
             )
             equal_weight = _run_strategy(
                 strategy="equal_weight",
@@ -118,6 +129,8 @@ def run_phase6_backtest(
                 scheduled_dates=cycle_data.get("scheduled_dates"),
                 scheduled_rebalance_dates=cycle_data.get("scheduled_rebalance_dates"),
                 scheduled_weights=equal_weight_scheduled,
+                show_progress=True,
+                progress_label=f"equal_weight cycle={cycle}d policy={rebalance_policy}",
             )
 
             for result in [min_var, equal_weight]:
@@ -719,6 +732,8 @@ def _run_strategy(
     scheduled_dates: np.ndarray | None = None,
     scheduled_rebalance_dates: np.ndarray | None = None,
     scheduled_weights: np.ndarray | None = None,
+    show_progress: bool = False,
+    progress_label: str | None = None,
 ) -> dict[str, Any]:
     if rebalance_policy not in {"buy_and_hold", "enter_once_then_drift", "daily_rebalance_to_target"}:
         raise ValueError(f"Unsupported rebalance_policy={rebalance_policy}")
@@ -735,6 +750,8 @@ def _run_strategy(
     interval_rows: list[dict[str, Any]] = []
     turnovers: list[float] = []
     offset = 0
+    total_days = len(dates)
+    progress_name = progress_label or f"{strategy} cycle={cycle_days} policy={rebalance_policy}"
 
     for date_idx, date in enumerate(dates):
         date_str = str(date)
@@ -757,6 +774,7 @@ def _run_strategy(
                     "ending_active_count": 0,
                 }
             )
+            _print_strategy_progress(show_progress, progress_name, date_idx + 1, total_days, date_str, equity)
             continue
 
         if scheduled_by_date is not None:
@@ -828,6 +846,7 @@ def _run_strategy(
                 "ending_active_count": int(np.sum(current_weights > 1e-6)),
             }
         )
+        _print_strategy_progress(show_progress, progress_name, date_idx + 1, total_days, date_str, equity)
 
     daily_df = pd.DataFrame(daily_rows)
     interval_df = pd.DataFrame(interval_rows)
@@ -838,6 +857,26 @@ def _run_strategy(
         "turnover_sum": float(np.sum(turnovers)),
         "turnover_action_count": int(len(turnovers)),
     }
+
+
+def _print_strategy_progress(
+    show_progress: bool,
+    label: str,
+    completed: int,
+    total: int,
+    date: str,
+    equity: float,
+) -> None:
+    if not show_progress:
+        return
+    if completed != 1 and completed % 100 != 0 and completed != total:
+        return
+    pct = completed / total * 100.0
+    print(
+        f"Phase 6 progress: {label} {completed}/{total} ({pct:.1f}%), "
+        f"date={date}, equity={equity:.4f}",
+        flush=True,
+    )
 
 
 def _initial_weights(date: str, rebalance_dates: np.ndarray, target_weights: np.ndarray) -> np.ndarray:
